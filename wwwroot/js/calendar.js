@@ -100,7 +100,11 @@ async function loadSchedules() {
             doorId: schedule.doorID || schedule.doorId,
             unlockTime: schedule.startTime || schedule.unlockTime,
             lockTime: schedule.endTime || schedule.lockTime,
-            eventName: schedule.scheduleName || schedule.eventName
+            eventName: schedule.scheduleName || schedule.eventName,
+            status: schedule.status || 'Pending',
+            notes: schedule.notes || '',
+            createdAt: schedule.createdAt,
+            lastModified: schedule.lastModified || schedule.updatedAt
         }));
         
         renderCalendarEvents();
@@ -292,7 +296,7 @@ function showEventDetails(event) {
         </div>
         <div class="event-detail-row">
             <span class="event-detail-label">Status:</span>
-            <span class="badge status-badge-${props.status.toLowerCase()}">${props.status}</span>
+            <span class="badge status-badge-${(props.status || 'pending').toLowerCase()}">${props.status || 'Pending'}</span>
         </div>
         ${props.notes ? `
         <div class="event-detail-row">
