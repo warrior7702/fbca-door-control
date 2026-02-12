@@ -74,13 +74,16 @@ public class SchedulesController : ControllerBase
                 DoorID = s.DoorID,
                 DoorName = s.Door?.DoorName ?? "Unknown",
                 ScheduleName = s.ScheduleName,
-                StartTime = s.StartTime,
-                EndTime = s.EndTime,
+                // Explicitly specify these are UTC times so JSON serialization includes Z suffix
+                StartTime = DateTime.SpecifyKind(s.StartTime, DateTimeKind.Utc),
+                EndTime = DateTime.SpecifyKind(s.EndTime, DateTimeKind.Utc),
                 RecurrencePattern = s.RecurrencePattern,
-                RecurrenceEndDate = s.RecurrenceEndDate,
+                RecurrenceEndDate = s.RecurrenceEndDate.HasValue 
+                    ? DateTime.SpecifyKind(s.RecurrenceEndDate.Value, DateTimeKind.Utc) 
+                    : null,
                 Source = s.Source,
                 IsActive = s.IsActive,
-                CreatedAt = s.CreatedAt
+                CreatedAt = DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc)
             }).ToList();
 
             return Ok(new ScheduleListResponse
@@ -120,13 +123,15 @@ public class SchedulesController : ControllerBase
                 DoorID = schedule.DoorID,
                 DoorName = schedule.Door?.DoorName ?? "Unknown",
                 ScheduleName = schedule.ScheduleName,
-                StartTime = schedule.StartTime,
-                EndTime = schedule.EndTime,
+                StartTime = DateTime.SpecifyKind(schedule.StartTime, DateTimeKind.Utc),
+                EndTime = DateTime.SpecifyKind(schedule.EndTime, DateTimeKind.Utc),
                 RecurrencePattern = schedule.RecurrencePattern,
-                RecurrenceEndDate = schedule.RecurrenceEndDate,
+                RecurrenceEndDate = schedule.RecurrenceEndDate.HasValue 
+                    ? DateTime.SpecifyKind(schedule.RecurrenceEndDate.Value, DateTimeKind.Utc) 
+                    : null,
                 Source = schedule.Source,
                 IsActive = schedule.IsActive,
-                CreatedAt = schedule.CreatedAt
+                CreatedAt = DateTime.SpecifyKind(schedule.CreatedAt, DateTimeKind.Utc)
             });
         }
         catch (Exception ex)

@@ -5,7 +5,14 @@ using FBCADoorControl.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Ensure DateTimes are serialized as UTC with Z suffix
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        // This ensures DateTime values are treated as UTC in JSON output
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -17,13 +24,17 @@ builder.Services.AddDbContext<VIACDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("VIAC")));
 
 // Register services
+// CRITICAL: Use singleton CookieContainer so all requests share the same MonitorCast session
+var sharedCookieContainer = new System.Net.CookieContainer();
+builder.Services.AddSingleton(sharedCookieContainer);
+
 builder.Services.AddScoped<IQuickControlsService, QuickControlsService>();
 builder.Services.AddScoped<IDoorSyncService, DoorSyncService>();
 builder.Services.AddHttpClient<IQuickControlsService, QuickControlsService>()
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
     {
         UseCookies = true,
-        CookieContainer = new System.Net.CookieContainer(),
+        CookieContainer = sp.GetRequiredService<System.Net.CookieContainer>(),
         AllowAutoRedirect = true
     });
 

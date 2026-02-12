@@ -25,12 +25,13 @@ public class QuickControlsService : IQuickControlsService
     public QuickControlsService(
         HttpClient httpClient,
         IConfiguration configuration,
-        ILogger<QuickControlsService> logger)
+        ILogger<QuickControlsService> logger,
+        CookieContainer cookieContainer)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
-        _cookieContainer = new CookieContainer();
+        _cookieContainer = cookieContainer; // Use shared singleton instance
         
         // Configure HttpClient handler with cookie support
         ConfigureHttpClient();
