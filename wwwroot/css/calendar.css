@@ -1,0 +1,275 @@
+/* FBCA Door Control Calendar Styles */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Calendar Container */
+#calendar {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Stat Items in Sidebar */
+.stat-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.stat-item .badge {
+    font-size: 1.1rem;
+    padding: 6px 12px;
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* FullCalendar Custom Styles */
+.fc {
+    font-size: 0.95rem;
+}
+
+.fc-event {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.fc-event:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.fc-daygrid-event {
+    white-space: normal;
+}
+
+/* Event color by status */
+.event-pending {
+    background-color: #0d6efd;
+    border-color: #0b5ed7;
+}
+
+.event-executed {
+    background-color: #198754;
+    border-color: #157347;
+}
+
+.event-failed {
+    background-color: #dc3545;
+    border-color: #bb2d3b;
+}
+
+.event-past {
+    background-color: #6c757d;
+    border-color: #5a6268;
+    opacity: 0.6;
+}
+
+/* Modal Enhancements */
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+/* Form Styling */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    transition: transform 0.2s;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    transition: transform 0.2s;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+}
+
+/* Health Status */
+#healthStatus {
+    font-size: 0.9rem;
+}
+
+.health-ok {
+    color: #198754;
+    font-weight: 600;
+}
+
+.health-error {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Event Details */
+.event-detail-row {
+    padding: 8px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.event-detail-row:last-child {
+    border-bottom: none;
+}
+
+.event-detail-label {
+    font-weight: 600;
+    color: #495057;
+    display: inline-block;
+    width: 140px;
+}
+
+.event-detail-value {
+    color: #212529;
+}
+
+/* Status Badges */
+.status-badge-pending {
+    background-color: #0d6efd;
+}
+
+.status-badge-executed {
+    background-color: #198754;
+}
+
+.status-badge-failed {
+    background-color: #dc3545;
+}
+
+.status-badge-cancelled {
+    background-color: #6c757d;
+}
+
+/* Navbar */
+.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Toast Notifications */
+.toast-container {
+    z-index: 9999;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .col-md-3 {
+        margin-bottom: 20px;
+    }
+    
+    .fc {
+        font-size: 0.85rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+}
+
+/* Animation for cards */
+.card {
+    animation: fadeInUp 0.4s ease-in-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Event tooltip */
+.fc-event-title {
+    font-weight: 600;
+}
+
+/* Calendar toolbar buttons */
+.fc-button {
+    text-transform: capitalize !important;
+}
+
+.fc-button-primary {
+    background-color: #667eea !important;
+    border-color: #667eea !important;
+}
+
+.fc-button-primary:hover {
+    background-color: #5568d3 !important;
+    border-color: #5568d3 !important;
+}
+
+.fc-button-primary:not(:disabled):active,
+.fc-button-primary:not(:disabled).fc-button-active {
+    background-color: #4451b8 !important;
+    border-color: #4451b8 !important;
+}
