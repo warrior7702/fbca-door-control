@@ -224,10 +224,10 @@ async function createSchedule() {
     
     const payload = {
         doorId: doorId,
-        unlockTime: new Date(unlockTime).toISOString(),
-        lockTime: new Date(lockTime).toISOString(),
-        eventName: eventName || null,
-        notes: notes || null
+        startTime: new Date(unlockTime).toISOString(),
+        endTime: new Date(lockTime).toISOString(),
+        scheduleName: eventName || null,
+        source: "Manual"
     };
     
     try {
