@@ -80,13 +80,39 @@ public class QuickControlsService : IQuickControlsService
                     "Executing Quick Controls: {Action} door {DeviceId} (attempt {Attempt}/{Max})",
                     action, viaDeviceId, attempt, RetryAttempts);
 
-                var requestContent = new FormUrlEncodedContent(new[]
+                // FIX: Use correct MonitorCast field names
+                // MonitorCast expects: btnUnlockDoor=true or btnLockDoor=true
+                // Device ID field: ReadersSelectedList (not deviceIDs)
+                var fields = new List<KeyValuePair<string, string>>();
+                
+                if (action.Equals("unlock", StringComparison.OrdinalIgnoreCase))
                 {
-                    new KeyValuePair<string, string>("deviceIDs", viaDeviceId.ToString()),
-                    new KeyValuePair<string, string>("action", action)
-                });
+                    fields.Add(new KeyValuePair<string, string>("btnUnlockDoor", "true"));
+                }
+                else
+                {
+                    fields.Add(new KeyValuePair<string, string>("btnLockDoor", "true"));
+                }
+                
+                fields.Add(new KeyValuePair<string, string>("s", ""));
+                fields.Add(new KeyValuePair<string, string>("s", ""));
+                fields.Add(new KeyValuePair<string, string>("ReadersSelectedList", viaDeviceId.ToString()));
+                fields.Add(new KeyValuePair<string, string>("X-Requested-With", "XMLHttpRequest"));
 
-                var response = await _httpClient.PostAsync("/Dashboard/LockUnlockDoor", requestContent);
+                var requestContent = new FormUrlEncodedContent(fields);
+
+                var request = new HttpRequestMessage(HttpMethod.Post, "/Dashboard/LockUnlockDoor")
+                {
+                    Content = requestContent
+                };
+                
+                // Add required headers
+                request.Headers.TryAddWithoutValidation("Accept", "*/*");
+                request.Headers.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
+                request.Headers.TryAddWithoutValidation("Origin", BaseUrl.TrimEnd('/'));
+                request.Headers.TryAddWithoutValidation("Referer", BaseUrl.TrimEnd('/') + "/Dashboard");
+
+                var response = await _httpClient.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
