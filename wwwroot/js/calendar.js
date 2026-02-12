@@ -25,6 +25,7 @@ function initializeCalendar() {
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        timeZone: 'local', // Convert UTC times from API to local timezone
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
