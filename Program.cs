@@ -19,7 +19,13 @@ builder.Services.AddDbContext<VIACDbContext>(options =>
 // Register services
 builder.Services.AddScoped<IQuickControlsService, QuickControlsService>();
 builder.Services.AddScoped<IDoorSyncService, DoorSyncService>();
-builder.Services.AddHttpClient<IQuickControlsService, QuickControlsService>();
+builder.Services.AddHttpClient<IQuickControlsService, QuickControlsService>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        UseCookies = true,
+        CookieContainer = new System.Net.CookieContainer(),
+        AllowAutoRedirect = true
+    });
 
 // Register background services
 builder.Services.AddHostedService<SchedulerService>();

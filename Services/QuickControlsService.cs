@@ -177,13 +177,11 @@ public class QuickControlsService : IQuickControlsService
             
             if (response.IsSuccessStatusCode)
             {
-                // Extract session cookies from response
-                if (response.Headers.TryGetValues("Set-Cookie", out var cookies))
-                {
-                    _logger.LogInformation("MonitorCast authentication successful, session cookies received");
-                    _lastAuthTime = DateTime.UtcNow;
-                    return true;
-                }
+                // MonitorCast returns 200 OK on successful login
+                // Cookies are automatically stored in the CookieContainer by HttpClient
+                _logger.LogInformation("MonitorCast authentication successful (HTTP {StatusCode})", response.StatusCode);
+                _lastAuthTime = DateTime.UtcNow;
+                return true;
             }
 
             _logger.LogError(
