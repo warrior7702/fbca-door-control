@@ -14,6 +14,7 @@ public class SchedulerService : BackgroundService
     private readonly ILogger<SchedulerService> _logger;
     private readonly int _checkIntervalSeconds;
     private readonly int _gracePeriodMinutes;
+    private readonly int _reUnlockIntervalMinutes;
 
     public SchedulerService(
         IServiceProvider serviceProvider,
@@ -24,13 +25,14 @@ public class SchedulerService : BackgroundService
         _logger = logger;
         _checkIntervalSeconds = configuration.GetValue<int>("Scheduler:CheckIntervalSeconds", 30);
         _gracePeriodMinutes = configuration.GetValue<int>("Scheduler:ActionGracePeriodMinutes", 5);
+        _reUnlockIntervalMinutes = configuration.GetValue<int>("Scheduler:ReUnlockIntervalMinutes", 2);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation(
-            "Scheduler service starting (check interval: {Interval}s, grace period: {Grace}min)",
-            _checkIntervalSeconds, _gracePeriodMinutes);
+            "Scheduler service starting (check interval: {Interval}s, grace period: {Grace}min, re-unlock interval: {ReUnlock}min)",
+            _checkIntervalSeconds, _gracePeriodMinutes, _reUnlockIntervalMinutes);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -58,12 +60,14 @@ public class SchedulerService : BackgroundService
 
         var now = DateTime.UtcNow;
         var gracePeriod = TimeSpan.FromMinutes(_gracePeriodMinutes);
+        var reUnlockInterval = TimeSpan.FromMinutes(_reUnlockIntervalMinutes);
 
         _logger.LogDebug("Checking schedules at {Time}", now);
 
-        // Find schedules needing UNLOCK (start time passed, not yet unlocked)
-        // Note: Load all active schedules first, then filter in memory for recent actions
-        // (EF can't translate HasRecentUnlock method to SQL)
+        // OPTION C: RE-UNLOCK MONITORING
+        // Find ALL currently active schedules (StartTime <= now < EndTime)
+        // Re-unlock if last unlock was more than reUnlockInterval ago
+        // This fights back against MonitorCast Card/Pin schedules that lock our doors
         var allActiveUnlockSchedules = await dbContext.UnlockSchedules
             .Include(s => s.Door)
             .Where(s => s.IsActive
@@ -71,9 +75,10 @@ public class SchedulerService : BackgroundService
                      && s.EndTime > now)
             .ToListAsync();
 
-        // Filter out schedules that have recent unlock actions (in-memory filter)
+        // Filter: Only unlock if last unlock was MORE than reUnlockInterval ago
+        // This means we re-assert unlock every 2 minutes to fight MonitorCast locks
         var unlockSchedules = allActiveUnlockSchedules
-            .Where(s => !HasRecentUnlock(dbContext, s.ScheduleID, s.DoorID, now, gracePeriod))
+            .Where(s => !HasRecentUnlock(dbContext, s.ScheduleID, s.DoorID, now, reUnlockInterval))
             .ToList();
 
         foreach (var schedule in unlockSchedules)
@@ -86,9 +91,23 @@ public class SchedulerService : BackgroundService
                 continue;
             }
 
-            _logger.LogInformation(
-                "Executing UNLOCK for schedule {ScheduleId}: Door {DoorName} (VIA Device {DeviceId})",
-                schedule.ScheduleID, schedule.Door.DoorName, schedule.Door.VIADeviceID);
+            // Determine if this is initial unlock or re-unlock (keep-alive)
+            var lastUnlock = GetLastUnlockTime(dbContext, schedule.ScheduleID, schedule.DoorID);
+            var isReUnlock = lastUnlock.HasValue && lastUnlock.Value < now.AddMinutes(-1);
+
+            if (isReUnlock)
+            {
+                _logger.LogInformation(
+                    "RE-UNLOCKING door for schedule {ScheduleId}: Door {DoorName} (Priority={Priority}) - " +
+                    "Fighting MonitorCast or other lock commands",
+                    schedule.ScheduleID, schedule.Door.DoorName, schedule.Priority);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "Executing UNLOCK for schedule {ScheduleId}: Door {DoorName} (VIA Device {DeviceId}, Priority={Priority})",
+                    schedule.ScheduleID, schedule.Door.DoorName, schedule.Door.VIADeviceID, schedule.Priority);
+            }
 
             await ExecuteScheduleActionAsync(
                 dbContext, quickControls, schedule, "UNLOCK");
@@ -259,5 +278,24 @@ public class SchedulerService : BackgroundService
                    && s.StartTime <= now
                    && s.EndTime > now
                    && s.Priority >= currentPriority);
+    }
+
+    /// <summary>
+    /// Get the timestamp of the last successful unlock for this schedule/door.
+    /// Used to determine if this is an initial unlock or a re-unlock (keep-alive).
+    /// </summary>
+    private DateTime? GetLastUnlockTime(
+        DoorControlDbContext dbContext,
+        int scheduleId,
+        int doorId)
+    {
+        return dbContext.ScheduleActionLogs
+            .Where(log => log.ScheduleID == scheduleId
+                       && log.DoorID == doorId
+                       && log.ActionType == "UNLOCK"
+                       && log.Success)
+            .OrderByDescending(log => log.ActionTime)
+            .Select(log => log.ActionTime)
+            .FirstOrDefault();
     }
 }
