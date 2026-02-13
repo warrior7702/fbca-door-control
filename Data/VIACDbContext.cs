@@ -47,6 +47,7 @@ public class VIADevice
     public int DeviceID { get; set; }
     public string DeviceName { get; set; } = string.Empty;
     public int? ControllerID { get; set; }
+    public int? DeviceType { get; set; }  // 1=Reader/Door, 2001/2002=Inputs, 1001/1002=Outputs
     
     [Column("Active")]  // Map to 'Active' column in database (not 'IsActive')
     public bool IsActive { get; set; }

@@ -30,9 +30,11 @@ public class DoorSyncService : IDoorSyncService
         {
             _logger.LogInformation("Reading doors from VIA database...");
 
-            // Query VIA database for all active door devices
+            // Query VIA database for all active door/reader devices
+            // DeviceType = 1 are the actual readers/doors
+            // Other types (2001, 2002, 1001, 1002) are inputs/outputs/aux
             var viaDevices = await _viacDb.HW_Devices
-                .Where(d => d.IsActive)
+                .Where(d => d.IsActive && d.DeviceType == 1)
                 .ToListAsync();
 
             // Get controller info for reference
