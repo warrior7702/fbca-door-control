@@ -81,24 +81,22 @@ public class QuickControlsService : IQuickControlsService
                     "Executing Quick Controls: {Action} door {DeviceId} (attempt {Attempt}/{Max})",
                     action, viaDeviceId, attempt, RetryAttempts);
 
-                // FIX: Use correct MonitorCast field names
-                // MonitorCast expects: btnUnlockDoor=true or btnLockDoor=true
-                // Device ID field: ReadersSelectedList (not deviceIDs)
+                // FIX: Use correct MonitorCast field names (from working DoorHealth app)
+                // MonitorCast expects: btnUnlock=true or btnLock=true (NO "Door" suffix!)
+                // Device ID field: ReadersSelectedList
                 var fields = new List<KeyValuePair<string, string>>();
                 
                 if (action.Equals("unlock", StringComparison.OrdinalIgnoreCase))
                 {
-                    fields.Add(new KeyValuePair<string, string>("btnUnlockDoor", "true"));
+                    fields.Add(new KeyValuePair<string, string>("btnUnlock", "true"));
                 }
                 else
                 {
-                    fields.Add(new KeyValuePair<string, string>("btnLockDoor", "true"));
+                    fields.Add(new KeyValuePair<string, string>("btnLock", "true"));
                 }
                 
-                fields.Add(new KeyValuePair<string, string>("s", ""));
-                fields.Add(new KeyValuePair<string, string>("s", ""));
                 fields.Add(new KeyValuePair<string, string>("ReadersSelectedList", viaDeviceId.ToString()));
-                fields.Add(new KeyValuePair<string, string>("X-Requested-With", "XMLHttpRequest"));
+                fields.Add(new KeyValuePair<string, string>("s", ""));
 
                 var requestContent = new FormUrlEncodedContent(fields);
 
