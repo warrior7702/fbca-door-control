@@ -61,7 +61,7 @@ function initializeCalendar() {
 // Load all doors from API
 async function loadDoors() {
     try {
-        const response = await fetch(`${API_BASE}/doors`);
+        const response = await fetch(`${API_BASE}/doors?isActive=true`);
         if (!response.ok) throw new Error('Failed to load doors');
         
         const data = await response.json();
