@@ -82,7 +82,7 @@ public class QuickControlsService : IQuickControlsService
                     action, viaDeviceId, attempt, RetryAttempts);
 
                 // FIX: Use correct MonitorCast field names (from working DoorHealth app)
-                // MonitorCast expects: btnUnlock=true or btnLock=true (NO "Door" suffix!)
+                // MonitorCast expects: btnUnlock (no "Door") but btnLockDoor (WITH "Door"!) - inconsistent API!
                 // Device ID field: ReadersSelectedList
                 var fields = new List<KeyValuePair<string, string>>();
                 
@@ -92,7 +92,7 @@ public class QuickControlsService : IQuickControlsService
                 }
                 else
                 {
-                    fields.Add(new KeyValuePair<string, string>("btnLock", "true"));
+                    fields.Add(new KeyValuePair<string, string>("btnLockDoor", "true"));
                 }
                 
                 fields.Add(new KeyValuePair<string, string>("ReadersSelectedList", viaDeviceId.ToString()));
