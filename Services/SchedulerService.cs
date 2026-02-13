@@ -118,9 +118,23 @@ public class SchedulerService : BackgroundService
                 continue;
             }
 
+            // PRIORITY CHECK: Don't lock if higher-priority schedules are still active
+            if (HasHigherPriorityScheduleActive(dbContext, schedule.DoorID, schedule.Priority, now))
+            {
+                _logger.LogInformation(
+                    "Skipping LOCK for schedule {ScheduleId} (Priority={Priority}) - " +
+                    "higher-priority schedule still active on door {DoorName}",
+                    schedule.ScheduleID, schedule.Priority, schedule.Door.DoorName);
+                
+                // Still deactivate this schedule (it's expired), but don't send lock
+                schedule.IsActive = false;
+                await dbContext.SaveChangesAsync();
+                continue;
+            }
+
             _logger.LogInformation(
-                "Executing LOCK for schedule {ScheduleId}: Door {DoorName} (VIA Device {DeviceId})",
-                schedule.ScheduleID, schedule.Door.DoorName, schedule.Door.VIADeviceID);
+                "Executing LOCK for schedule {ScheduleId}: Door {DoorName} (VIA Device {DeviceId}, Priority={Priority})",
+                schedule.ScheduleID, schedule.Door.DoorName, schedule.Door.VIADeviceID, schedule.Priority);
 
             await ExecuteScheduleActionAsync(
                 dbContext, quickControls, schedule, "LOCK");
@@ -226,5 +240,24 @@ public class SchedulerService : BackgroundService
                      && log.ActionType == "LOCK"
                      && log.Success
                      && log.ActionTime >= cutoff);
+    }
+
+    /// <summary>
+    /// Check if there are any active schedules with higher or equal priority on this door.
+    /// Used to prevent lower-priority schedules from locking when higher-priority ones are active.
+    /// Example: Card/Pin schedule (Priority=1) ending should NOT lock if Event unlock (Priority=10) is active.
+    /// </summary>
+    private bool HasHigherPriorityScheduleActive(
+        DoorControlDbContext dbContext,
+        int doorId,
+        int currentPriority,
+        DateTime now)
+    {
+        return dbContext.UnlockSchedules
+            .Any(s => s.DoorID == doorId
+                   && s.IsActive
+                   && s.StartTime <= now
+                   && s.EndTime > now
+                   && s.Priority >= currentPriority);
     }
 }

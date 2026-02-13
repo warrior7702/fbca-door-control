@@ -65,6 +65,19 @@ public class UnlockSchedule
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// Schedule priority (higher number = higher priority).
+    /// Used to prevent lower-priority schedules from overriding higher-priority ones.
+    /// Priority levels:
+    /// - 1: Card/Pin access schedules (low priority, can be overridden)
+    /// - 5: Normal unlock schedules (default)
+    /// - 10: Emergency/Event unlocks (high priority, cannot be overridden)
+    /// When a schedule ends and wants to LOCK, it only locks if no higher-priority
+    /// schedules are currently active on the same door.
+    /// </summary>
+    [Required]
+    public int Priority { get; set; } = 5;
+
+    /// <summary>
     /// Who created this schedule (Phase 3 - authentication)
     /// </summary>
     [MaxLength(255)]
