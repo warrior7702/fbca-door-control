@@ -124,6 +124,14 @@ public class SchedulerService : BackgroundService
 
             await ExecuteScheduleActionAsync(
                 dbContext, quickControls, schedule, "LOCK");
+
+            // Deactivate schedule after lock (completed)
+            schedule.IsActive = false;
+            await dbContext.SaveChangesAsync();
+            
+            _logger.LogInformation(
+                "Schedule {ScheduleId} completed and deactivated",
+                schedule.ScheduleID);
         }
     }
 
