@@ -95,12 +95,8 @@ public class QuickControlsService : IQuickControlsService
                     fields.Add(new KeyValuePair<string, string>("btnLockDoor", "true"));
                 }
                 
-                // Add two 's' parameters: first empty, second 'dbl' (manual override mode)
-                // This matches MonitorCast manual unlock behavior (discovered 2/12/26)
-                fields.Add(new KeyValuePair<string, string>("s", ""));
-                fields.Add(new KeyValuePair<string, string>("s", "dbl"));
-                
                 fields.Add(new KeyValuePair<string, string>("ReadersSelectedList", viaDeviceId.ToString()));
+                fields.Add(new KeyValuePair<string, string>("s", ""));
 
                 var requestContent = new FormUrlEncodedContent(fields);
 
