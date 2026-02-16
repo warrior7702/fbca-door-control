@@ -167,16 +167,22 @@ const BUILDINGS = {
 };
 
 // Extract building name from controller name
-function extractBuilding(controllerName) {
+function extractBuilding(controllerName, doorName = '') {
     if (!controllerName) return 'Unknown';
     
     // Format: "Controller 2: Wade Building" -> extract building
-    const name = controllerName.toLowerCase();
+    const ctrlName = controllerName.toLowerCase();
+    const dName = doorName.toLowerCase();
     
-    if (name.includes('wade')) return 'Wade';
-    if (name.includes('main') || name.includes('church')) return 'Main Church';
-    if (name.includes('student')) return 'Student Center';
-    if (name.includes('pcb') || name.includes('preschool') || name.includes('children')) return 'PCB';
+    // Check both controller name and door name for building keywords
+    if (ctrlName.includes('wade') || dName.includes('wade')) return 'Wade';
+    if (ctrlName.includes('pcb') || dName.includes('pcb') || 
+        ctrlName.includes('preschool') || dName.includes('preschool') || 
+        ctrlName.includes('children') || dName.includes('children')) return 'PCB';
+    if (ctrlName.includes('student') || dName.includes('student') || 
+        dName.includes('sc-')) return 'Student Center';
+    if (ctrlName.includes('main') || ctrlName.includes('church') || 
+        dName.includes('fbc-') || dName.includes('flc-') || dName.includes('parlor')) return 'Main Church';
     
     // Fallback
     return controllerName.split(':')[1]?.trim() || controllerName;
@@ -199,7 +205,7 @@ function populateDoorDropdowns() {
     };
     
     allDoors.forEach(door => {
-        const building = extractBuilding(door.controllerName);
+        const building = extractBuilding(door.controllerName, door.doorName);
         if (doorsByBuilding[building]) {
             doorsByBuilding[building].push(door);
         }
@@ -835,7 +841,7 @@ async function createMultiDoorEvent() {
             const door = allDoors.find(d => d.doorId === doorId);
             if (!door) return null;
             
-            const building = extractBuilding(door.controllerName);
+            const building = extractBuilding(door.controllerName, door.doorName);
             const buildingKey = getBuildingKey(building);
             
             // Check if building has custom times
