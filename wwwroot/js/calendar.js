@@ -5,6 +5,7 @@ let calendar;
 let allDoors = [];
 let allSchedules = [];
 let currentSelectedEvent = null;
+let doorsByBuilding = {};
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -157,33 +158,123 @@ function renderCalendarEvents() {
     calendar.addEventSource(events);
 }
 
-// Populate door dropdowns
+// Building key mapping
+const BUILDINGS = {
+    wade: 'Wade',
+    mainChurch: 'Main Church',
+    studentCenter: 'Student Center',
+    pcb: 'PCB'
+};
+
+// Extract building name from controller name
+function extractBuilding(controllerName) {
+    if (!controllerName) return 'Unknown';
+    
+    // Format: "Controller 2: Wade Building" -> extract building
+    const name = controllerName.toLowerCase();
+    
+    if (name.includes('wade')) return 'Wade';
+    if (name.includes('main') || name.includes('church')) return 'Main Church';
+    if (name.includes('student')) return 'Student Center';
+    if (name.includes('pcb') || name.includes('preschool') || name.includes('children')) return 'PCB';
+    
+    // Fallback
+    return controllerName.split(':')[1]?.trim() || controllerName;
+}
+
+// Populate door dropdowns with building grouping
 function populateDoorDropdowns() {
-    const createSelect = document.getElementById('createDoorId');
-    const filterSelect = document.getElementById('doorFilter');
+    // Clear all building filter dropdowns
+    document.getElementById('doorFilterWade').innerHTML = '<option value="">Select door...</option>';
+    document.getElementById('doorFilterMainChurch').innerHTML = '<option value="">Select door...</option>';
+    document.getElementById('doorFilterStudentCenter').innerHTML = '<option value="">Select door...</option>';
+    document.getElementById('doorFilterPCB').innerHTML = '<option value="">Select door...</option>';
     
-    // Clear existing options (keep placeholder)
-    createSelect.innerHTML = '<option value="">Select a door...</option>';
-    filterSelect.innerHTML = '<option value="">All Doors</option>';
+    // Group doors by building (store globally for create modal)
+    doorsByBuilding = {
+        'Wade': [],
+        'Main Church': [],
+        'Student Center': [],
+        'PCB': []
+    };
     
-    // Sort doors by name
-    const sortedDoors = [...allDoors].sort((a, b) => 
-        a.doorName.localeCompare(b.doorName)
-    );
+    allDoors.forEach(door => {
+        const building = extractBuilding(door.controllerName);
+        if (doorsByBuilding[building]) {
+            doorsByBuilding[building].push(door);
+        }
+    });
     
-    // Add door options
-    sortedDoors.forEach(door => {
+    // Sort doors within each building
+    Object.keys(doorsByBuilding).forEach(building => {
+        doorsByBuilding[building].sort((a, b) => a.doorName.localeCompare(b.doorName));
+    });
+    
+    // Populate individual building filter dropdowns
+    populateBuildingDropdown('doorFilterWade', doorsByBuilding['Wade']);
+    populateBuildingDropdown('doorFilterMainChurch', doorsByBuilding['Main Church']);
+    populateBuildingDropdown('doorFilterStudentCenter', doorsByBuilding['Student Center']);
+    populateBuildingDropdown('doorFilterPCB', doorsByBuilding['PCB']);
+}
+
+// Update door list in create modal based on selected building
+function updateCreateDoorList() {
+    const buildingSelect = document.getElementById('createBuilding');
+    const doorSelect = document.getElementById('createDoorId');
+    
+    const selectedBuilding = buildingSelect.value;
+    
+    if (!selectedBuilding) {
+        // No building selected - disable door dropdown
+        doorSelect.disabled = true;
+        doorSelect.innerHTML = '<option value="">Select a building first...</option>';
+        return;
+    }
+    
+    // Enable door dropdown and populate with doors from selected building
+    doorSelect.disabled = false;
+    doorSelect.innerHTML = '<option value="">Select a door...</option>';
+    
+    const doors = doorsByBuilding[selectedBuilding] || [];
+    
+    if (doors.length === 0) {
+        doorSelect.innerHTML = '<option value="">No doors found for this building</option>';
+        doorSelect.disabled = true;
+        return;
+    }
+    
+    doors.forEach(door => {
         const option = document.createElement('option');
         option.value = door.doorId;
         option.textContent = door.doorName;
-        createSelect.appendChild(option.cloneNode(true));
-        filterSelect.appendChild(option);
+        doorSelect.appendChild(option);
+    });
+}
+
+// Populate a single building dropdown
+function populateBuildingDropdown(selectId, doors) {
+    const select = document.getElementById(selectId);
+    
+    // Sort doors by name
+    doors.sort((a, b) => a.doorName.localeCompare(b.doorName));
+    
+    doors.forEach(door => {
+        const option = document.createElement('option');
+        option.value = door.doorId;
+        option.textContent = door.doorName;
+        select.appendChild(option);
     });
 }
 
 // Show create schedule modal
 function showCreateModal(selectedDate = null) {
     const modal = new bootstrap.Modal(document.getElementById('createScheduleModal'));
+    
+    // Reset building/door selectors
+    document.getElementById('createBuilding').value = '';
+    document.getElementById('createDoorId').value = '';
+    document.getElementById('createDoorId').disabled = true;
+    document.getElementById('createDoorId').innerHTML = '<option value="">Select a building first...</option>';
     
     // Pre-fill date if provided
     if (selectedDate) {
@@ -384,8 +475,32 @@ async function syncDoors() {
 }
 
 // Filter calendar by door
-function filterDoors() {
-    const selectedDoorId = parseInt(document.getElementById('doorFilter').value);
+function filterDoors(building) {
+    // Get the selected door ID from the appropriate dropdown
+    let selectedDoorId;
+    
+    if (building === 'wade') {
+        selectedDoorId = parseInt(document.getElementById('doorFilterWade').value);
+        // Clear other dropdowns
+        document.getElementById('doorFilterMainChurch').value = '';
+        document.getElementById('doorFilterStudentCenter').value = '';
+        document.getElementById('doorFilterPCB').value = '';
+    } else if (building === 'mainChurch') {
+        selectedDoorId = parseInt(document.getElementById('doorFilterMainChurch').value);
+        document.getElementById('doorFilterWade').value = '';
+        document.getElementById('doorFilterStudentCenter').value = '';
+        document.getElementById('doorFilterPCB').value = '';
+    } else if (building === 'studentCenter') {
+        selectedDoorId = parseInt(document.getElementById('doorFilterStudentCenter').value);
+        document.getElementById('doorFilterWade').value = '';
+        document.getElementById('doorFilterMainChurch').value = '';
+        document.getElementById('doorFilterPCB').value = '';
+    } else if (building === 'pcb') {
+        selectedDoorId = parseInt(document.getElementById('doorFilterPCB').value);
+        document.getElementById('doorFilterWade').value = '';
+        document.getElementById('doorFilterMainChurch').value = '';
+        document.getElementById('doorFilterStudentCenter').value = '';
+    }
     
     if (!selectedDoorId) {
         // Show all events
@@ -497,4 +612,304 @@ function formatDateTimeLocal(date) {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// ===== MULTI-DOOR EVENT FUNCTIONS =====
+
+let multiDoorStep = 1;
+let multiDoorSelectedDoors = [];
+
+// Show multi-door event modal
+function showMultiDoorModal() {
+    const modal = new bootstrap.Modal(document.getElementById('multiDoorModal'));
+    
+    // Reset to step 1
+    multiDoorStep = 1;
+    multiDoorSelectedDoors = [];
+    
+    // Reset form
+    document.getElementById('multiDoorForm').reset();
+    document.getElementById('multiEventName').value = '';
+    
+    // Show step 1, hide step 2
+    document.getElementById('multiDoorStep1').classList.remove('d-none');
+    document.getElementById('multiDoorStep2').classList.add('d-none');
+    
+    // Show/hide buttons
+    document.getElementById('multiDoorNextBtn').classList.remove('d-none');
+    document.getElementById('multiDoorBackBtn').classList.add('d-none');
+    document.getElementById('multiDoorCreateBtn').classList.add('d-none');
+    
+    // Pre-fill with current date/time
+    const now = new Date();
+    const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    document.getElementById('multiDefaultUnlockTime').value = formatDateTimeLocal(now);
+    document.getElementById('multiDefaultLockTime').value = formatDateTimeLocal(twoHoursLater);
+    
+    modal.show();
+}
+
+// Next button - move to step 2
+function multiDoorNext() {
+    if (multiDoorStep === 1) {
+        // Validate step 1
+        const eventName = document.getElementById('multiEventName').value.trim();
+        const unlockTime = document.getElementById('multiDefaultUnlockTime').value;
+        const lockTime = document.getElementById('multiDefaultLockTime').value;
+        
+        if (!eventName) {
+            alert('Please enter an event name');
+            return;
+        }
+        
+        if (!unlockTime || !lockTime) {
+            alert('Please specify unlock and lock times');
+            return;
+        }
+        
+        if (new Date(lockTime) <= new Date(unlockTime)) {
+            alert('Lock time must be after unlock time');
+            return;
+        }
+        
+        // Move to step 2
+        multiDoorStep = 2;
+        document.getElementById('multiDoorStep1').classList.add('d-none');
+        document.getElementById('multiDoorStep2').classList.remove('d-none');
+        
+        // Update buttons
+        document.getElementById('multiDoorNextBtn').classList.add('d-none');
+        document.getElementById('multiDoorBackBtn').classList.remove('d-none');
+        document.getElementById('multiDoorCreateBtn').classList.remove('d-none');
+        
+        // Populate door checkboxes
+        populateMultiDoorCheckboxes();
+    }
+}
+
+// Back button - return to step 1
+function multiDoorBack() {
+    if (multiDoorStep === 2) {
+        multiDoorStep = 1;
+        document.getElementById('multiDoorStep1').classList.remove('d-none');
+        document.getElementById('multiDoorStep2').classList.add('d-none');
+        
+        // Update buttons
+        document.getElementById('multiDoorNextBtn').classList.remove('d-none');
+        document.getElementById('multiDoorBackBtn').classList.add('d-none');
+        document.getElementById('multiDoorCreateBtn').classList.add('d-none');
+    }
+}
+
+// Populate door checkboxes by building
+function populateMultiDoorCheckboxes() {
+    // Populate each building
+    populateBuildingCheckboxes('wade', 'Wade', doorsByBuilding['Wade'] || []);
+    populateBuildingCheckboxes('mainChurch', 'Main Church', doorsByBuilding['Main Church'] || []);
+    populateBuildingCheckboxes('studentCenter', 'Student Center', doorsByBuilding['Student Center'] || []);
+    populateBuildingCheckboxes('pcb', 'PCB', doorsByBuilding['PCB'] || []);
+}
+
+// Populate checkboxes for a specific building
+function populateBuildingCheckboxes(buildingKey, buildingName, doors) {
+    const containerId = `doors${buildingKey.charAt(0).toUpperCase() + buildingKey.slice(1)}`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (doors.length === 0) {
+        container.innerHTML = '<p class="text-muted small">No doors found for this building</p>';
+        return;
+    }
+    
+    doors.forEach(door => {
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.className = 'door-checkbox-multi';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `door_${door.doorId}`;
+        checkbox.value = door.doorId;
+        checkbox.className = 'form-check-input';
+        checkbox.onchange = updateMultiDoorSelection;
+        
+        const label = document.createElement('label');
+        label.htmlFor = `door_${door.doorId}`;
+        label.className = 'form-check-label';
+        label.textContent = door.doorName;
+        
+        checkboxDiv.appendChild(checkbox);
+        checkboxDiv.appendChild(label);
+        container.appendChild(checkboxDiv);
+    });
+}
+
+// Toggle custom times for a building
+function toggleCustomTimes(buildingKey) {
+    const customTimesId = `customTimes${buildingKey.charAt(0).toUpperCase() + buildingKey.slice(1)}`;
+    const customTimesDiv = document.getElementById(customTimesId);
+    
+    if (customTimesDiv.classList.contains('d-none')) {
+        customTimesDiv.classList.remove('d-none');
+        
+        // Pre-fill with default times
+        const defaultUnlock = document.getElementById('multiDefaultUnlockTime').value;
+        const defaultLock = document.getElementById('multiDefaultLockTime').value;
+        
+        const unlockInput = document.getElementById(`${buildingKey}UnlockTime`);
+        const lockInput = document.getElementById(`${buildingKey}LockTime`);
+        
+        if (!unlockInput.value) unlockInput.value = defaultUnlock;
+        if (!lockInput.value) lockInput.value = defaultLock;
+    } else {
+        customTimesDiv.classList.add('d-none');
+    }
+}
+
+// Select all doors in a building
+function selectAllBuilding(buildingKey) {
+    const containerId = `doors${buildingKey.charAt(0).toUpperCase() + buildingKey.slice(1)}`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+    });
+    
+    updateMultiDoorSelection();
+}
+
+// Update selection preview
+function updateMultiDoorSelection() {
+    const allCheckboxes = document.querySelectorAll('.door-checkbox-multi input[type="checkbox"]');
+    multiDoorSelectedDoors = Array.from(allCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => parseInt(cb.value));
+    
+    const previewDiv = document.getElementById('selectedDoorsPreview');
+    const countSpan = document.getElementById('selectedDoorsCount');
+    const listDiv = document.getElementById('selectedDoorsList');
+    
+    if (multiDoorSelectedDoors.length === 0) {
+        previewDiv.classList.add('d-none');
+        return;
+    }
+    
+    previewDiv.classList.remove('d-none');
+    countSpan.textContent = `✅ ${multiDoorSelectedDoors.length} Door(s) Selected`;
+    
+    // Build badge list
+    listDiv.innerHTML = '';
+    multiDoorSelectedDoors.forEach(doorId => {
+        const door = allDoors.find(d => d.doorId === doorId);
+        if (!door) return;
+        
+        const badge = document.createElement('span');
+        badge.className = 'selected-door-badge-multi';
+        badge.textContent = door.doorName;
+        listDiv.appendChild(badge);
+    });
+}
+
+// Create multi-door event
+async function createMultiDoorEvent() {
+    try {
+        // Validate selection
+        if (multiDoorSelectedDoors.length === 0) {
+            alert('Please select at least one door');
+            return;
+        }
+        
+        const eventName = document.getElementById('multiEventName').value.trim();
+        const defaultUnlock = document.getElementById('multiDefaultUnlockTime').value;
+        const defaultLock = document.getElementById('multiDefaultLockTime').value;
+        
+        // Build door requests with custom times
+        const doorRequests = multiDoorSelectedDoors.map(doorId => {
+            const door = allDoors.find(d => d.doorId === doorId);
+            if (!door) return null;
+            
+            const building = extractBuilding(door.controllerName);
+            const buildingKey = getBuildingKey(building);
+            
+            // Check if building has custom times
+            const customTimesDiv = document.getElementById(`customTimes${buildingKey.charAt(0).toUpperCase() + buildingKey.slice(1)}`);
+            
+            let customUnlock = null;
+            let customLock = null;
+            
+            if (customTimesDiv && !customTimesDiv.classList.contains('d-none')) {
+                const unlockInput = document.getElementById(`${buildingKey}UnlockTime`);
+                const lockInput = document.getElementById(`${buildingKey}LockTime`);
+                
+                if (unlockInput && unlockInput.value) {
+                    customUnlock = new Date(unlockInput.value).toISOString();
+                }
+                if (lockInput && lockInput.value) {
+                    customLock = new Date(lockInput.value).toISOString();
+                }
+            }
+            
+            return {
+                doorId: doorId,
+                customStartTime: customUnlock,
+                customEndTime: customLock
+            };
+        }).filter(r => r !== null);
+        
+        const payload = {
+            eventName: eventName,
+            defaultStartTime: new Date(defaultUnlock).toISOString(),
+            defaultEndTime: new Date(defaultLock).toISOString(),
+            doors: doorRequests,
+            source: 'Multi-Door Event'
+        };
+        
+        // Call batch API
+        const response = await fetch(`${API_BASE}/schedules/batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error);
+        }
+        
+        const result = await response.json();
+        
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('multiDoorModal')).hide();
+        
+        // Reload schedules
+        await loadSchedules();
+        
+        showSuccess(result.message || `Created ${result.successCount} schedule(s)!`);
+        
+        if (result.errors && result.errors.length > 0) {
+            console.warn('Some doors had errors:', result.errors);
+        }
+        
+    } catch (error) {
+        console.error('Error creating multi-door event:', error);
+        showError('Failed to create multi-door event: ' + error.message);
+    }
+}
+
+// Get building key from building name
+function getBuildingKey(buildingName) {
+    const map = {
+        'Wade': 'wade',
+        'Main Church': 'mainChurch',
+        'Student Center': 'studentCenter',
+        'PCB': 'pcb'
+    };
+    return map[buildingName] || 'wade';
 }

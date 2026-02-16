@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Door Event Mockup - FBCA Door Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f5f5;
+            padding: 30px;
+        }
+        .mockup-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .building-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+        .building-section h6 {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .door-checkbox-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+        .door-checkbox-item:hover {
+            background: #f0f0ff;
+            border-color: #667eea;
+        }
+        .door-checkbox-item input[type="checkbox"]:checked + label {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .selected-doors-preview {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .selected-door-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin: 4px;
+            font-size: 0.9rem;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+        }
+        .step.active {
+            background: #667eea;
+            color: white;
+        }
+        .step.complete {
+            background: #4caf50;
+            color: white;
+        }
+        .step-line {
+            width: 60px;
+            height: 3px;
+            background: #e0e0e0;
+        }
+        .select-all-btn {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+        }
+        .custom-times-toggle {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            margin-left: 8px;
+        }
+        .custom-times-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .custom-times-section h6 {
+            color: #856404;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+        <!-- Modal Header -->
+        <div class="modal-header p-4">
+            <h4 class="mb-0">🚪 Create Multi-Door Event Schedule</h4>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body p-4">
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step complete">1</div>
+                <div class="step-line"></div>
+                <div class="step active">2</div>
+                <div class="step-line"></div>
+                <div class="step">3</div>
+            </div>
+
+            <!-- Step 1: Event Details (shown as completed) -->
+            <div class="alert alert-success mb-4">
+                ✅ <strong>Event:</strong> Sunday Morning Service<br>
+                <small><strong>Default Times:</strong> Unlock: Feb 18, 2026 8:00 AM | Lock: Feb 18, 2026 1:00 PM</small>
+            </div>
+            
+            <div class="alert alert-info mb-4">
+                <small>ℹ️ All selected doors will use the default times above unless you set custom times for a specific building.</small>
+            </div>
+
+            <!-- Step 2: Select Doors -->
+            <h5 class="mb-3">Select Doors to Unlock</h5>
+            <p class="text-muted small mb-4">Choose all doors needed for this event. You can select from multiple buildings.</p>
+
+            <!-- Wade Building -->
+            <div class="building-section">
+                <h6>
+                    🏢 Wade Building
+                    <button class="btn btn-sm btn-outline-warning custom-times-toggle" onclick="alert('Toggle custom times')">⏰ Custom Times</button>
+                    <button class="btn btn-sm btn-outline-primary select-all-btn" onclick="alert('Select all Wade doors')">Select All</button>
+                </h6>
+                
+                <!-- Custom Times Section (shown when toggled) -->
+                <div class="custom-times-section">
+                    <h6>⏰ Custom Times for Wade Building</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Unlock Time</label>
+                            <input type="datetime-local" class="form-control form-control-sm" value="2026-02-18T07:30">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Lock Time</label>
+                            <input type="datetime-local" class="form-control form-control-sm" value="2026-02-18T13:00">
+                        </div>
+                    </div>
+                    <small class="text-muted">Wade opens 30 min earlier than default</small>
+                </div>
+                
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="wade1" class="form-check-input me-2" checked>
+                    <label for="wade1" class="form-check-label">Wade Main Entrance</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="wade2" class="form-check-input me-2">
+                    <label for="wade2" class="form-check-label">Wade Side Door A</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="wade3" class="form-check-input me-2" checked>
+                    <label for="wade3" class="form-check-label">Wade Back Entrance</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="wade4" class="form-check-input me-2">
+                    <label for="wade4" class="form-check-label">Wade Parking Lot Door</label>
+                </div>
+            </div>
+
+            <!-- Main Church -->
+            <div class="building-section">
+                <h6>
+                    ⛪ Main Church
+                    <button class="btn btn-sm btn-outline-warning custom-times-toggle" onclick="alert('Toggle custom times')">⏰ Custom Times</button>
+                    <button class="btn btn-sm btn-outline-primary select-all-btn" onclick="alert('Select all Main Church doors')">Select All</button>
+                </h6>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="main1" class="form-check-input me-2" checked>
+                    <label for="main1" class="form-check-label">Sanctuary Main Entrance</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="main2" class="form-check-input me-2" checked>
+                    <label for="main2" class="form-check-label">Sanctuary Side Door B</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="main3" class="form-check-input me-2">
+                    <label for="main3" class="form-check-label">Choir Room Entrance</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="main4" class="form-check-input me-2" checked>
+                    <label for="main4" class="form-check-label">Fellowship Hall Door</label>
+                </div>
+            </div>
+
+            <!-- Student Center -->
+            <div class="building-section">
+                <h6>
+                    🎓 Student Center
+                    <button class="btn btn-sm btn-outline-warning custom-times-toggle" onclick="alert('Toggle custom times')">⏰ Custom Times</button>
+                    <button class="btn btn-sm btn-outline-primary select-all-btn" onclick="alert('Select all Student Center doors')">Select All</button>
+                </h6>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="student1" class="form-check-input me-2">
+                    <label for="student1" class="form-check-label">Student Main Entrance</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="student2" class="form-check-input me-2">
+                    <label for="student2" class="form-check-label">Student Gym Access</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="student3" class="form-check-input me-2">
+                    <label for="student3" class="form-check-label">Student Side Door</label>
+                </div>
+            </div>
+
+            <!-- PCB -->
+            <div class="building-section">
+                <h6>
+                    👶 PCB (Preschool Children's Building)
+                    <button class="btn btn-sm btn-outline-warning custom-times-toggle" onclick="alert('Toggle custom times')">⏰ Custom Times</button>
+                    <button class="btn btn-sm btn-outline-primary select-all-btn" onclick="alert('Select all PCB doors')">Select All</button>
+                </h6>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="pcb1" class="form-check-input me-2" checked>
+                    <label for="pcb1" class="form-check-label">PCB Main Entrance</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="pcb2" class="form-check-input me-2">
+                    <label for="pcb2" class="form-check-label">PCB Nursery Door</label>
+                </div>
+                <div class="door-checkbox-item">
+                    <input type="checkbox" id="pcb3" class="form-check-input me-2" checked>
+                    <label for="pcb3" class="form-check-label">PCB Playground Access</label>
+                </div>
+            </div>
+
+            <!-- Selected Doors Preview -->
+            <div class="selected-doors-preview">
+                <strong>✅ 7 Doors Selected</strong>
+                <div class="mt-2">
+                    <span class="selected-door-badge" style="background: #ff9800;">Wade Main Entrance ⏰</span>
+                    <span class="selected-door-badge" style="background: #ff9800;">Wade Back Entrance ⏰</span>
+                    <span class="selected-door-badge">Sanctuary Main Entrance</span>
+                    <span class="selected-door-badge">Sanctuary Side Door B</span>
+                    <span class="selected-door-badge">Fellowship Hall Door</span>
+                    <span class="selected-door-badge">PCB Main Entrance</span>
+                    <span class="selected-door-badge">PCB Playground Access</span>
+                </div>
+                <p class="mt-3 mb-0 small">
+                    <strong>Time Summary:</strong><br>
+                    • Wade Building (2 doors): 7:30 AM - 1:00 PM ⏰ <em>custom</em><br>
+                    • Main Church (3 doors): 8:00 AM - 1:00 PM <em>default</em><br>
+                    • PCB (2 doors): 8:00 AM - 1:00 PM <em>default</em>
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer p-4">
+            <button class="btn btn-secondary">← Back to Event Details</button>
+            <button class="btn btn-primary">Review & Create Schedule →</button>
+        </div>
+    </div>
+
+    <!-- Calendar UI Preview -->
+    <div class="mockup-container mt-5" style="max-width: 600px;">
+        <div class="bg-primary text-white p-3 rounded-top">
+            <h5 class="mb-0">📅 Calendar Navigation Bar Preview</h5>
+        </div>
+        <div class="bg-light p-4 rounded-bottom">
+            <p class="mb-3"><strong>How it appears on the main calendar:</strong></p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success">
+                    ➕ Create Schedule
+                </button>
+                <button class="btn btn-primary">
+                    🏢 Create Multi-Door Event
+                </button>
+            </div>
+            <p class="text-muted small mt-3">
+                Use <strong>"Create Schedule"</strong> for single-door schedules.<br>
+                Use <strong>"Create Multi-Door Event"</strong> for events that need multiple buildings/doors.
+            </p>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <p class="text-muted"><strong>Mockup:</strong> Multi-Door Event Scheduler for FBCA Door Control</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -37,3 +37,30 @@ public class ScheduleCreateResponse
     public int ScheduleID { get; set; }
     public string Message { get; set; } = string.Empty;
 }
+
+public class BatchScheduleDoorRequest
+{
+    public int DoorId { get; set; }
+    public DateTime? CustomStartTime { get; set; }
+    public DateTime? CustomEndTime { get; set; }
+}
+
+public class CreateBatchScheduleRequest
+{
+    public string EventName { get; set; } = string.Empty;
+    public DateTime DefaultStartTime { get; set; }
+    public DateTime DefaultEndTime { get; set; }
+    public List<BatchScheduleDoorRequest> Doors { get; set; } = new();
+    public string? RecurrencePattern { get; set; }
+    public DateTime? RecurrenceEndDate { get; set; }
+    public string? Source { get; set; }
+}
+
+public class BatchScheduleCreateResponse
+{
+    public string Message { get; set; } = string.Empty;
+    public List<int> ScheduleIds { get; set; } = new();
+    public int SuccessCount { get; set; }
+    public int ErrorCount { get; set; }
+    public List<string>? Errors { get; set; }
+}
