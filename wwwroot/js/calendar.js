@@ -124,39 +124,72 @@ async function loadSchedules() {
     }
 }
 
-// Render schedules as calendar events
+// Render schedules as calendar events (event-centered, not door-centered)
 function renderCalendarEvents() {
     if (!calendar) return;
     
     // Clear existing events
     calendar.removeAllEvents();
     
-    // Convert schedules to FullCalendar events
-    const events = allSchedules.map(schedule => {
-        const door = allDoors.find(d => d.doorId === schedule.doorId);
-        const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
+    // Group schedules by event name + time (one calendar event per actual event)
+    const eventGroups = {};
+    
+    allSchedules.forEach(schedule => {
+        const eventKey = `${schedule.eventName || 'Unnamed Event'}_${schedule.unlockTime}_${schedule.lockTime}`;
+        
+        if (!eventGroups[eventKey]) {
+            eventGroups[eventKey] = {
+                eventName: schedule.eventName || 'Unnamed Event',
+                unlockTime: schedule.unlockTime,
+                lockTime: schedule.lockTime,
+                schedules: [],
+                status: schedule.status, // Track worst status
+                notes: schedule.notes,
+                createdAt: schedule.createdAt
+            };
+        }
+        
+        eventGroups[eventKey].schedules.push(schedule);
+        
+        // Update status to worst case (Failed > Cancelled > Pending > Executed)
+        if (schedule.status === 'Failed') eventGroups[eventKey].status = 'Failed';
+        else if (schedule.status === 'Cancelled' && eventGroups[eventKey].status !== 'Failed') 
+            eventGroups[eventKey].status = 'Cancelled';
+        else if (schedule.status === 'Pending' && eventGroups[eventKey].status === 'Executed')
+            eventGroups[eventKey].status = 'Pending';
+    });
+    
+    // Convert event groups to FullCalendar events
+    const events = Object.values(eventGroups).map(group => {
+        const doorCount = group.schedules.length;
+        const doorList = group.schedules
+            .map(s => {
+                const door = allDoors.find(d => d.doorId === s.doorId);
+                return door ? door.doorName : `Door ${s.doorId}`;
+            })
+            .join(', ');
         
         // Determine event color based on status
         let color = '#0d6efd'; // pending = blue
-        if (schedule.status === 'Executed') color = '#198754'; // green
-        if (schedule.status === 'Failed') color = '#dc3545'; // red
-        if (schedule.status === 'Cancelled') color = '#6c757d'; // gray
+        if (group.status === 'Executed') color = '#198754'; // green
+        if (group.status === 'Failed') color = '#dc3545'; // red
+        if (group.status === 'Cancelled') color = '#6c757d'; // gray
         
         return {
-            id: schedule.scheduleId,
-            title: schedule.eventName || doorName,
-            start: schedule.unlockTime,
-            end: schedule.lockTime,
+            id: `event_${group.eventName}_${group.unlockTime}`,
+            title: doorCount > 1 ? `${group.eventName} (${doorCount} doors)` : group.eventName,
+            start: group.unlockTime,
+            end: group.lockTime,
             backgroundColor: color,
             borderColor: color,
             extendedProps: {
-                scheduleId: schedule.scheduleId,
-                doorId: schedule.doorId,
-                doorName: doorName,
-                status: schedule.status,
-                notes: schedule.notes,
-                createdAt: schedule.createdAt,
-                lastModified: schedule.lastModified
+                eventName: group.eventName,
+                schedules: group.schedules,
+                doorCount: doorCount,
+                doorList: doorList,
+                status: group.status,
+                notes: group.notes,
+                createdAt: group.createdAt
             }
         };
     });
@@ -435,7 +468,7 @@ async function createSchedule() {
     }
 }
 
-// Show event details modal
+// Show event details modal (event-centered with all doors)
 function showEventDetails(event) {
     currentSelectedEvent = event;
     
@@ -443,18 +476,28 @@ function showEventDetails(event) {
     const startTime = new Date(event.start);
     const endTime = event.end ? new Date(event.end) : null;
     
+    // Build door list HTML
+    let doorListHTML = '';
+    if (props.schedules && props.schedules.length > 0) {
+        doorListHTML = '<div class="event-door-list">';
+        props.schedules.forEach(schedule => {
+            const door = allDoors.find(d => d.doorId === schedule.doorId);
+            const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
+            const scheduleStatus = schedule.status || 'Pending';
+            doorListHTML += `
+                <div class="event-door-item">
+                    <span class="event-door-name">${doorName}</span>
+                    <span class="badge status-badge-${scheduleStatus.toLowerCase()}">${scheduleStatus}</span>
+                </div>
+            `;
+        });
+        doorListHTML += '</div>';
+    }
+    
     const content = `
         <div class="event-detail-row">
-            <span class="event-detail-label">Schedule ID:</span>
-            <span class="event-detail-value">${props.scheduleId}</span>
-        </div>
-        <div class="event-detail-row">
-            <span class="event-detail-label">Door:</span>
-            <span class="event-detail-value">${props.doorName}</span>
-        </div>
-        <div class="event-detail-row">
             <span class="event-detail-label">Event Name:</span>
-            <span class="event-detail-value">${event.title}</span>
+            <span class="event-detail-value">${props.eventName}</span>
         </div>
         <div class="event-detail-row">
             <span class="event-detail-label">Unlock Time:</span>
@@ -464,6 +507,10 @@ function showEventDetails(event) {
             <span class="event-detail-label">Lock Time:</span>
             <span class="event-detail-value">${endTime ? formatDateTime(endTime) : 'N/A'}</span>
         </div>
+        <div class="event-detail-row">
+            <span class="event-detail-label">Doors (${props.doorCount}):</span>
+        </div>
+        ${doorListHTML}
         <div class="event-detail-row">
             <span class="event-detail-label">Status:</span>
             <span class="badge status-badge-${(props.status || 'pending').toLowerCase()}">${props.status || 'Pending'}</span>
@@ -486,24 +533,33 @@ function showEventDetails(event) {
     modal.show();
 }
 
-// Delete schedule
+// Delete schedule (deletes all door schedules in the event)
 async function deleteSchedule() {
     if (!currentSelectedEvent) return;
     
-    if (!confirm('Are you sure you want to delete this schedule?')) {
+    const props = currentSelectedEvent.extendedProps;
+    const doorCount = props.schedules ? props.schedules.length : 0;
+    const confirmMsg = doorCount > 1 
+        ? `Are you sure you want to delete this event and all ${doorCount} door schedules?`
+        : 'Are you sure you want to delete this schedule?';
+    
+    if (!confirm(confirmMsg)) {
         return;
     }
     
-    const scheduleId = currentSelectedEvent.extendedProps.scheduleId;
-    
     try {
-        const response = await fetch(`${API_BASE}/schedules/${scheduleId}`, {
-            method: 'DELETE'
-        });
+        // Delete all schedules in this event
+        const schedules = props.schedules || [];
+        const deletePromises = schedules.map(schedule => 
+            fetch(`${API_BASE}/schedules/${schedule.scheduleId}`, { method: 'DELETE' })
+        );
         
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(error);
+        const responses = await Promise.all(deletePromises);
+        
+        // Check if any failed
+        const failed = responses.filter(r => !r.ok);
+        if (failed.length > 0) {
+            throw new Error(`Failed to delete ${failed.length} schedule(s)`);
         }
         
         // Close modal
@@ -512,7 +568,7 @@ async function deleteSchedule() {
         // Reload schedules
         await loadSchedules();
         
-        showSuccess('Schedule deleted successfully!');
+        showSuccess(`Event deleted successfully! (${schedules.length} door schedule(s) removed)`);
         
     } catch (error) {
         console.error('Error deleting schedule:', error);
@@ -584,36 +640,72 @@ function filterDoors(building) {
         // Show all events
         renderCalendarEvents();
     } else {
-        // Filter events
+        // Filter events - show events that include the selected door
         if (!calendar) return;
         
         calendar.removeAllEvents();
         
+        // Filter schedules that match the selected door
         const filteredSchedules = allSchedules.filter(s => s.doorId === selectedDoorId);
-        const events = filteredSchedules.map(schedule => {
-            const door = allDoors.find(d => d.doorId === schedule.doorId);
-            const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
+        
+        // Group by event (same logic as renderCalendarEvents)
+        const eventGroups = {};
+        
+        filteredSchedules.forEach(schedule => {
+            const eventKey = `${schedule.eventName || 'Unnamed Event'}_${schedule.unlockTime}_${schedule.lockTime}`;
+            
+            if (!eventGroups[eventKey]) {
+                eventGroups[eventKey] = {
+                    eventName: schedule.eventName || 'Unnamed Event',
+                    unlockTime: schedule.unlockTime,
+                    lockTime: schedule.lockTime,
+                    schedules: [],
+                    status: schedule.status,
+                    notes: schedule.notes,
+                    createdAt: schedule.createdAt
+                };
+            }
+            
+            // Include ALL schedules for this event (not just the filtered door)
+            // Find all schedules with same event name and times
+            const allEventSchedules = allSchedules.filter(s => 
+                s.eventName === schedule.eventName &&
+                s.unlockTime === schedule.unlockTime &&
+                s.lockTime === schedule.lockTime
+            );
+            
+            eventGroups[eventKey].schedules = allEventSchedules;
+            
+            if (schedule.status === 'Failed') eventGroups[eventKey].status = 'Failed';
+            else if (schedule.status === 'Cancelled' && eventGroups[eventKey].status !== 'Failed') 
+                eventGroups[eventKey].status = 'Cancelled';
+            else if (schedule.status === 'Pending' && eventGroups[eventKey].status === 'Executed')
+                eventGroups[eventKey].status = 'Pending';
+        });
+        
+        // Convert to calendar events
+        const events = Object.values(eventGroups).map(group => {
+            const doorCount = group.schedules.length;
             
             let color = '#0d6efd';
-            if (schedule.status === 'Executed') color = '#198754';
-            if (schedule.status === 'Failed') color = '#dc3545';
-            if (schedule.status === 'Cancelled') color = '#6c757d';
+            if (group.status === 'Executed') color = '#198754';
+            if (group.status === 'Failed') color = '#dc3545';
+            if (group.status === 'Cancelled') color = '#6c757d';
             
             return {
-                id: schedule.scheduleId,
-                title: schedule.eventName || doorName,
-                start: schedule.unlockTime,
-                end: schedule.lockTime,
+                id: `event_${group.eventName}_${group.unlockTime}`,
+                title: doorCount > 1 ? `${group.eventName} (${doorCount} doors)` : group.eventName,
+                start: group.unlockTime,
+                end: group.lockTime,
                 backgroundColor: color,
                 borderColor: color,
                 extendedProps: {
-                    scheduleId: schedule.scheduleId,
-                    doorId: schedule.doorId,
-                    doorName: doorName,
-                    status: schedule.status,
-                    notes: schedule.notes,
-                    createdAt: schedule.createdAt,
-                    lastModified: schedule.lastModified
+                    eventName: group.eventName,
+                    schedules: group.schedules,
+                    doorCount: doorCount,
+                    status: group.status,
+                    notes: group.notes,
+                    createdAt: group.createdAt
                 }
             };
         });
