@@ -69,13 +69,19 @@ async function loadDoors() {
         const doors = data.doors || data; // Handle both {doors: [...]} and [...] formats
         
         // Normalize property names (API returns doorID, scheduleID with capital ID)
-        allDoors = doors.map(door => ({
-            ...door,
-            doorId: door.doorID || door.doorId,
-            doorName: door.doorName,
-            viaDeviceId: door.viaDeviceID || door.viaDeviceId,
-            isActive: door.isActive
-        }));
+        allDoors = doors
+            .map(door => ({
+                ...door,
+                doorId: door.doorID || door.doorId,
+                doorName: door.doorName,
+                viaDeviceId: door.viaDeviceID || door.viaDeviceId,
+                isActive: door.isActive
+            }))
+            // Filter out card readers (kept in DB for future alarm/monitoring use)
+            .filter(door => {
+                const name = door.doorName.toLowerCase();
+                return !name.includes('reader');
+            });
         
         populateDoorDropdowns();
         updateStats();
