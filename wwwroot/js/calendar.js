@@ -41,7 +41,7 @@ function initializeCalendar() {
         
         // When user clicks a date/time
         select: function(info) {
-            showCreateModal(info.startStr);
+            showDaySummary(info.start);
         },
         
         // When user clicks an event
@@ -275,6 +275,72 @@ function populateBuildingDropdown(selectId, doors) {
         option.value = door.doorId;
         option.textContent = door.doorName;
         select.appendChild(option);
+    });
+}
+
+// Show day summary modal
+function showDaySummary(selectedDate) {
+    const date = selectedDate instanceof Date ? selectedDate : new Date(selectedDate);
+    const dateStr = date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // Find schedules for this day
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    const daySchedules = allSchedules.filter(schedule => {
+        const unlockTime = new Date(schedule.unlockTime);
+        return unlockTime >= dayStart && unlockTime <= dayEnd;
+    });
+    
+    // Build schedule list
+    let scheduleListHTML = '';
+    if (daySchedules.length === 0) {
+        scheduleListHTML = '<p class="text-muted-modern">No schedules for this day</p>';
+    } else {
+        scheduleListHTML = '<div class="day-schedule-list">';
+        daySchedules.forEach(schedule => {
+            const door = allDoors.find(d => d.doorId === schedule.doorId);
+            const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
+            const unlockTime = new Date(schedule.unlockTime);
+            const lockTime = new Date(schedule.lockTime);
+            const timeRange = `${formatTime(unlockTime)} - ${formatTime(lockTime)}`;
+            
+            scheduleListHTML += `
+                <div class="day-schedule-item">
+                    <div class="day-schedule-door">${doorName}</div>
+                    <div class="day-schedule-event">${schedule.eventName || 'Unnamed Event'}</div>
+                    <div class="day-schedule-time">${timeRange}</div>
+                </div>
+            `;
+        });
+        scheduleListHTML += '</div>';
+    }
+    
+    // Update modal content
+    document.getElementById('daySummaryDate').textContent = dateStr;
+    document.getElementById('daySummarySchedules').innerHTML = scheduleListHTML;
+    document.getElementById('daySummaryCreateBtn').onclick = () => {
+        bootstrap.Modal.getInstance(document.getElementById('daySummaryModal')).hide();
+        showCreateModal(date);
+    };
+    
+    const modal = new bootstrap.Modal(document.getElementById('daySummaryModal'));
+    modal.show();
+}
+
+// Format time only (no date)
+function formatTime(date) {
+    return date.toLocaleString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
     });
 }
 

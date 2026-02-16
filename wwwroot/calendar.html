@@ -11,110 +11,151 @@
     <!-- FullCalendar 6 -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Custom CSS -->
     <link href="/css/calendar.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-primary">
+    <!-- Modern Navigation Bar -->
+    <nav class="navbar navbar-expand-lg modern-navbar">
         <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">🚪 FBCA Door Schedule Calendar</span>
-            <div>
-                <button class="btn btn-light btn-sm me-2" onclick="syncDoors()">
+            <div class="navbar-brand-wrapper">
+                <div class="brand-icon">🚪</div>
+                <div class="brand-text">
+                    <div class="brand-title">FBCA Door Control</div>
+                    <div class="brand-subtitle">Schedule Management</div>
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button class="btn modern-btn btn-glass me-2" onclick="syncDoors()">
                     <span id="syncSpinner" class="spinner-border spinner-border-sm d-none me-1"></span>
-                    🔄 Sync Doors
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Sync</span>
                 </button>
-                <button class="btn btn-success btn-sm me-2" onclick="showCreateModal()">
-                    ➕ Create Schedule
+                <button class="btn modern-btn btn-primary-gradient me-2" onclick="showCreateModal()">
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">Create Schedule</span>
                 </button>
-                <button class="btn btn-primary btn-sm" onclick="showMultiDoorModal()">
-                    🏢 Create Multi-Door Event
+                <button class="btn modern-btn btn-accent-gradient" onclick="showMultiDoorModal()">
+                    <span class="btn-icon">🏢</span>
+                    <span class="btn-text">Multi-Door Event</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid mt-3">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">📋 Statistics</h5>
+    <div class="container-fluid main-content">
+        <div class="row g-4">
+            <!-- Modern Sidebar -->
+            <div class="col-xl-3 col-lg-4">
+                <!-- Statistics Card -->
+                <div class="glass-card stat-card">
+                    <div class="card-header-modern">
+                        <div class="card-icon">📊</div>
+                        <h5>Statistics</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="stat-item">
-                            <strong>Total Doors:</strong>
-                            <span id="statTotalDoors" class="badge bg-primary">0</span>
+                    <div class="card-body-modern">
+                        <div class="stat-item-modern">
+                            <div class="stat-label">Total Doors</div>
+                            <div class="stat-value">
+                                <span id="statTotalDoors" class="stat-number">0</span>
+                                <div class="stat-badge stat-badge-primary">Active</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <strong>Active Schedules:</strong>
-                            <span id="statActiveSchedules" class="badge bg-success">0</span>
+                        <div class="stat-item-modern">
+                            <div class="stat-label">Active Schedules</div>
+                            <div class="stat-value">
+                                <span id="statActiveSchedules" class="stat-number">0</span>
+                                <div class="stat-badge stat-badge-success">Running</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <strong>Last Sync:</strong>
-                            <div id="statLastSync" class="text-muted small">Never</div>
+                        <div class="stat-item-modern">
+                            <div class="stat-label">Last Sync</div>
+                            <div class="stat-value-small">
+                                <span id="statLastSync" class="text-muted-modern">Never</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card mt-3">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">🏢 Quick Door Access</h5>
+                <!-- Door Filter Card -->
+                <div class="glass-card door-filter-card">
+                    <div class="card-header-modern">
+                        <div class="card-icon">🔍</div>
+                        <h5>Door Filter</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body-modern">
                         <!-- Wade Building -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Wade Building</label>
-                            <select id="doorFilterWade" class="form-select form-select-sm" onchange="filterDoors('wade')">
+                        <div class="building-group">
+                            <label class="building-label">
+                                <span class="building-emoji">🏢</span>
+                                Wade Building
+                            </label>
+                            <select id="doorFilterWade" class="form-select modern-select" onchange="filterDoors('wade')">
                                 <option value="">Select door...</option>
                             </select>
                         </div>
                         
                         <!-- Main Church -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Main Church</label>
-                            <select id="doorFilterMainChurch" class="form-select form-select-sm" onchange="filterDoors('mainChurch')">
+                        <div class="building-group">
+                            <label class="building-label">
+                                <span class="building-emoji">⛪</span>
+                                Main Church
+                            </label>
+                            <select id="doorFilterMainChurch" class="form-select modern-select" onchange="filterDoors('mainChurch')">
                                 <option value="">Select door...</option>
                             </select>
                         </div>
                         
                         <!-- Student Center -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Student Center</label>
-                            <select id="doorFilterStudentCenter" class="form-select form-select-sm" onchange="filterDoors('studentCenter')">
+                        <div class="building-group">
+                            <label class="building-label">
+                                <span class="building-emoji">🎓</span>
+                                Student Center
+                            </label>
+                            <select id="doorFilterStudentCenter" class="form-select modern-select" onchange="filterDoors('studentCenter')">
                                 <option value="">Select door...</option>
                             </select>
                         </div>
                         
                         <!-- PCB -->
-                        <div class="mb-0">
-                            <label class="form-label fw-bold">PCB (Preschool)</label>
-                            <select id="doorFilterPCB" class="form-select form-select-sm" onchange="filterDoors('pcb')">
+                        <div class="building-group">
+                            <label class="building-label">
+                                <span class="building-emoji">👶</span>
+                                PCB (Preschool)
+                            </label>
+                            <select id="doorFilterPCB" class="form-select modern-select" onchange="filterDoors('pcb')">
                                 <option value="">Select door...</option>
                             </select>
                         </div>
                         
-                        <div class="form-text mt-2">Select a door to filter calendar</div>
+                        <div class="helper-text">Select a door to filter calendar</div>
                     </div>
                 </div>
 
-                <div class="card mt-3">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">📊 System Health</h5>
+                <!-- System Health Card -->
+                <div class="glass-card health-card">
+                    <div class="card-header-modern">
+                        <div class="card-icon">💓</div>
+                        <h5>System Health</h5>
                     </div>
-                    <div class="card-body">
-                        <div id="healthStatus">
+                    <div class="card-body-modern">
+                        <div id="healthStatus" class="health-status">
                             <div class="spinner-border spinner-border-sm text-primary"></div>
-                            Checking...
+                            Checking system...
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Calendar -->
-            <div class="col-md-9">
-                <div class="card">
-                    <div class="card-body">
+            <!-- Calendar Section -->
+            <div class="col-xl-9 col-lg-8">
+                <div class="glass-card calendar-card">
+                    <div class="calendar-wrapper">
                         <div id="calendar"></div>
                     </div>
                 </div>
@@ -122,19 +163,46 @@
         </div>
     </div>
 
-    <!-- Create Schedule Modal -->
-    <div class="modal fade" id="createScheduleModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">➕ Create Door Unlock Schedule</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Day Summary Modal -->
+    <div class="modal fade" id="daySummaryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modern-modal">
+                <div class="modal-header-modern">
+                    <div class="modal-icon">📅</div>
+                    <h5 class="modal-title">Day Schedule Summary</h5>
+                    <button type="button" class="btn-close-modern" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body-modern">
+                    <h6 id="daySummaryDate" class="mb-3" style="font-size: 1.1rem; font-weight: 600;">Date</h6>
+                    <div id="daySummarySchedules"></div>
+                </div>
+                <div class="modal-footer-modern">
+                    <button type="button" class="btn modern-btn btn-glass" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="daySummaryCreateBtn" class="btn modern-btn btn-primary-gradient">
+                        ➕ Create Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Create Schedule Modal -->
+    <div class="modal fade" id="createScheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modern-modal">
+                <div class="modal-header-modern">
+                    <div class="modal-icon">➕</div>
+                    <h5 class="modal-title">Create Door Schedule</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body-modern">
                     <form id="createScheduleForm">
-                        <div class="mb-3">
-                            <label class="form-label">Building *</label>
-                            <select id="createBuilding" class="form-select" required onchange="updateCreateDoorList()">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <span class="label-icon">🏢</span>
+                                Building
+                            </label>
+                            <select id="createBuilding" class="form-select modern-input" required onchange="updateCreateDoorList()">
                                 <option value="">Select a building...</option>
                                 <option value="Wade">Wade Building</option>
                                 <option value="Main Church">Main Church</option>
@@ -143,42 +211,68 @@
                             </select>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Door *</label>
-                            <select id="createDoorId" class="form-select" required disabled>
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <span class="label-icon">🚪</span>
+                                Door
+                            </label>
+                            <select id="createDoorId" class="form-select modern-input" required disabled>
                                 <option value="">Select a building first...</option>
                             </select>
-                            <div class="form-text">Choose a building above to see available doors</div>
+                            <div class="helper-text">Choose a building above to see available doors</div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Unlock Date & Time *</label>
-                            <input type="datetime-local" id="createUnlockTime" class="form-control" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">
+                                        <span class="label-icon">🔓</span>
+                                        Unlock Time
+                                    </label>
+                                    <input type="datetime-local" id="createUnlockTime" class="form-control modern-input" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">
+                                        <span class="label-icon">🔒</span>
+                                        Lock Time
+                                    </label>
+                                    <input type="datetime-local" id="createLockTime" class="form-control modern-input" required>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Lock Date & Time *</label>
-                            <input type="datetime-local" id="createLockTime" class="form-control" required>
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <span class="label-icon">📝</span>
+                                Event Name
+                            </label>
+                            <input type="text" id="createEventName" class="form-control modern-input" placeholder="e.g., Sunday Service, Youth Group">
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Event Name</label>
-                            <input type="text" id="createEventName" class="form-control" placeholder="e.g., Sunday Service, Youth Group">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <span class="label-icon">💬</span>
+                                Notes
+                            </label>
+                            <textarea id="createNotes" class="form-control modern-input" rows="3" placeholder="Add any additional notes..."></textarea>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
-                            <textarea id="createNotes" class="form-control" rows="2"></textarea>
-                        </div>
-                        
-                        <div class="alert alert-info small">
-                            <strong>Note:</strong> Scheduler checks every 30 seconds. Doors will unlock/lock within 30 seconds of scheduled time.
+                        <div class="info-box">
+                            <div class="info-icon">ℹ️</div>
+                            <div class="info-text">
+                                Scheduler checks every 30 seconds. Doors will unlock/lock within 30 seconds of scheduled time.
+                            </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="createSchedule()">Create Schedule</button>
+                <div class="modal-footer-modern">
+                    <button type="button" class="btn modern-btn btn-secondary-glass" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn modern-btn btn-primary-gradient" onclick="createSchedule()">
+                        <span class="btn-icon">✓</span>
+                        Create Schedule
+                    </button>
                 </div>
             </div>
         </div>
@@ -186,177 +280,224 @@
 
     <!-- Multi-Door Event Modal -->
     <div class="modal fade" id="multiDoorModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">🏢 Create Multi-Door Event Schedule</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modern-modal">
+                <div class="modal-header-modern modal-header-accent">
+                    <div class="modal-icon">🏢</div>
+                    <h5 class="modal-title">Create Multi-Door Event</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body-modern modal-body-scrollable">
                     <form id="multiDoorForm">
                         <!-- Step 1: Event Details -->
                         <div id="multiDoorStep1">
-                            <h6 class="mb-3">📝 Event Details</h6>
+                            <div class="step-header">
+                                <div class="step-number">1</div>
+                                <h6>Event Details</h6>
+                            </div>
                             
-                            <div class="mb-3">
-                                <label class="form-label">Event Name *</label>
-                                <input type="text" id="multiEventName" class="form-control" required placeholder="e.g., Sunday Morning Service">
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <span class="label-icon">📅</span>
+                                    Event Name
+                                </label>
+                                <input type="text" id="multiEventName" class="form-control modern-input" required placeholder="e.g., Sunday Morning Service">
                             </div>
                             
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Default Unlock Time *</label>
-                                    <input type="datetime-local" id="multiDefaultUnlockTime" class="form-control" required>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <span class="label-icon">🔓</span>
+                                            Default Unlock Time
+                                        </label>
+                                        <input type="datetime-local" id="multiDefaultUnlockTime" class="form-control modern-input" required>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Default Lock Time *</label>
-                                    <input type="datetime-local" id="multiDefaultLockTime" class="form-control" required>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <span class="label-icon">🔒</span>
+                                            Default Lock Time
+                                        </label>
+                                        <input type="datetime-local" id="multiDefaultLockTime" class="form-control modern-input" required>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="alert alert-info small">
-                                ℹ️ All selected doors will use these default times unless you set custom times for a specific building.
+                            <div class="info-box">
+                                <div class="info-icon">💡</div>
+                                <div class="info-text">
+                                    All selected doors will use these default times unless you set custom times for a specific building.
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Step 2: Select Doors -->
                         <div id="multiDoorStep2" class="d-none">
-                            <h6 class="mb-3">🚪 Select Doors</h6>
-                            <p class="text-muted small mb-3">Choose all doors needed for this event. You can select from multiple buildings.</p>
+                            <div class="step-header">
+                                <div class="step-number">2</div>
+                                <h6>Select Doors</h6>
+                            </div>
+                            <p class="step-description">Choose all doors needed for this event. You can select from multiple buildings.</p>
                             
                             <!-- Wade Building -->
-                            <div class="building-section-multi mb-3" id="buildingWade">
-                                <div class="d-flex align-items-center mb-2">
-                                    <h6 class="mb-0">🏢 Wade Building</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-warning ms-2" onclick="toggleCustomTimes('wade')">
-                                        ⏰ Custom Times
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="selectAllBuilding('wade')">
-                                        Select All
-                                    </button>
+                            <div class="building-section-modern" id="buildingWade">
+                                <div class="building-header">
+                                    <div class="building-title">
+                                        <span class="building-emoji">🏢</span>
+                                        <span>Wade Building</span>
+                                    </div>
+                                    <div class="building-actions">
+                                        <button type="button" class="btn btn-sm btn-time-toggle" onclick="toggleCustomTimes('wade')">
+                                            ⏰ Custom Times
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-select-all" onclick="selectAllBuilding('wade')">
+                                            Select All
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <div id="customTimesWade" class="custom-times-box d-none mb-2">
-                                    <h6>⏰ Custom Times for Wade Building</h6>
+                                <div id="customTimesWade" class="custom-times-box d-none">
+                                    <div class="custom-times-header">⏰ Custom Times for Wade Building</div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <label class="form-label small">Unlock Time</label>
-                                            <input type="datetime-local" id="wadeUnlockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Unlock Time</label>
+                                            <input type="datetime-local" id="wadeUnlockTime" class="form-control modern-input-sm">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label small">Lock Time</label>
-                                            <input type="datetime-local" id="wadeLockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Lock Time</label>
+                                            <input type="datetime-local" id="wadeLockTime" class="form-control modern-input-sm">
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div id="doorsWade"></div>
+                                <div id="doorsWade" class="doors-grid"></div>
                             </div>
                             
                             <!-- Main Church -->
-                            <div class="building-section-multi mb-3" id="buildingMainChurch">
-                                <div class="d-flex align-items-center mb-2">
-                                    <h6 class="mb-0">⛪ Main Church</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-warning ms-2" onclick="toggleCustomTimes('mainChurch')">
-                                        ⏰ Custom Times
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="selectAllBuilding('mainChurch')">
-                                        Select All
-                                    </button>
+                            <div class="building-section-modern" id="buildingMainChurch">
+                                <div class="building-header">
+                                    <div class="building-title">
+                                        <span class="building-emoji">⛪</span>
+                                        <span>Main Church</span>
+                                    </div>
+                                    <div class="building-actions">
+                                        <button type="button" class="btn btn-sm btn-time-toggle" onclick="toggleCustomTimes('mainChurch')">
+                                            ⏰ Custom Times
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-select-all" onclick="selectAllBuilding('mainChurch')">
+                                            Select All
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <div id="customTimesMainChurch" class="custom-times-box d-none mb-2">
-                                    <h6>⏰ Custom Times for Main Church</h6>
+                                <div id="customTimesMainChurch" class="custom-times-box d-none">
+                                    <div class="custom-times-header">⏰ Custom Times for Main Church</div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <label class="form-label small">Unlock Time</label>
-                                            <input type="datetime-local" id="mainChurchUnlockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Unlock Time</label>
+                                            <input type="datetime-local" id="mainChurchUnlockTime" class="form-control modern-input-sm">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label small">Lock Time</label>
-                                            <input type="datetime-local" id="mainChurchLockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Lock Time</label>
+                                            <input type="datetime-local" id="mainChurchLockTime" class="form-control modern-input-sm">
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div id="doorsMainChurch"></div>
+                                <div id="doorsMainChurch" class="doors-grid"></div>
                             </div>
                             
                             <!-- Student Center -->
-                            <div class="building-section-multi mb-3" id="buildingStudentCenter">
-                                <div class="d-flex align-items-center mb-2">
-                                    <h6 class="mb-0">🎓 Student Center</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-warning ms-2" onclick="toggleCustomTimes('studentCenter')">
-                                        ⏰ Custom Times
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="selectAllBuilding('studentCenter')">
-                                        Select All
-                                    </button>
+                            <div class="building-section-modern" id="buildingStudentCenter">
+                                <div class="building-header">
+                                    <div class="building-title">
+                                        <span class="building-emoji">🎓</span>
+                                        <span>Student Center</span>
+                                    </div>
+                                    <div class="building-actions">
+                                        <button type="button" class="btn btn-sm btn-time-toggle" onclick="toggleCustomTimes('studentCenter')">
+                                            ⏰ Custom Times
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-select-all" onclick="selectAllBuilding('studentCenter')">
+                                            Select All
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <div id="customTimesStudentCenter" class="custom-times-box d-none mb-2">
-                                    <h6>⏰ Custom Times for Student Center</h6>
+                                <div id="customTimesStudentCenter" class="custom-times-box d-none">
+                                    <div class="custom-times-header">⏰ Custom Times for Student Center</div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <label class="form-label small">Unlock Time</label>
-                                            <input type="datetime-local" id="studentCenterUnlockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Unlock Time</label>
+                                            <input type="datetime-local" id="studentCenterUnlockTime" class="form-control modern-input-sm">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label small">Lock Time</label>
-                                            <input type="datetime-local" id="studentCenterLockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Lock Time</label>
+                                            <input type="datetime-local" id="studentCenterLockTime" class="form-control modern-input-sm">
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div id="doorsStudentCenter"></div>
+                                <div id="doorsStudentCenter" class="doors-grid"></div>
                             </div>
                             
                             <!-- PCB -->
-                            <div class="building-section-multi mb-3" id="buildingPCB">
-                                <div class="d-flex align-items-center mb-2">
-                                    <h6 class="mb-0">👶 PCB (Preschool)</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-warning ms-2" onclick="toggleCustomTimes('pcb')">
-                                        ⏰ Custom Times
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="selectAllBuilding('pcb')">
-                                        Select All
-                                    </button>
+                            <div class="building-section-modern" id="buildingPCB">
+                                <div class="building-header">
+                                    <div class="building-title">
+                                        <span class="building-emoji">👶</span>
+                                        <span>PCB (Preschool)</span>
+                                    </div>
+                                    <div class="building-actions">
+                                        <button type="button" class="btn btn-sm btn-time-toggle" onclick="toggleCustomTimes('pcb')">
+                                            ⏰ Custom Times
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-select-all" onclick="selectAllBuilding('pcb')">
+                                            Select All
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <div id="customTimesPcb" class="custom-times-box d-none mb-2">
-                                    <h6>⏰ Custom Times for PCB</h6>
+                                <div id="customTimesPcb" class="custom-times-box d-none">
+                                    <div class="custom-times-header">⏰ Custom Times for PCB</div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <label class="form-label small">Unlock Time</label>
-                                            <input type="datetime-local" id="pcbUnlockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Unlock Time</label>
+                                            <input type="datetime-local" id="pcbUnlockTime" class="form-control modern-input-sm">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label small">Lock Time</label>
-                                            <input type="datetime-local" id="pcbLockTime" class="form-control form-control-sm">
+                                            <label class="form-label-small">Lock Time</label>
+                                            <input type="datetime-local" id="pcbLockTime" class="form-control modern-input-sm">
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div id="doorsPcb"></div>
+                                <div id="doorsPcb" class="doors-grid"></div>
                             </div>
                             
                             <!-- Selected Doors Preview -->
-                            <div id="selectedDoorsPreview" class="selected-doors-summary d-none">
-                                <strong id="selectedDoorsCount">0 Doors Selected</strong>
-                                <div id="selectedDoorsList" class="mt-2"></div>
+                            <div id="selectedDoorsPreview" class="selected-preview d-none">
+                                <div class="selected-header">
+                                    <span class="selected-icon">✓</span>
+                                    <strong id="selectedDoorsCount">0 Doors Selected</strong>
+                                </div>
+                                <div id="selectedDoorsList" class="selected-list"></div>
                             </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" id="multiDoorNextBtn" class="btn btn-primary" onclick="multiDoorNext()">
-                        Next: Select Doors →
-                    </button>
-                    <button type="button" id="multiDoorBackBtn" class="btn btn-secondary d-none" onclick="multiDoorBack()">
+                <div class="modal-footer-modern">
+                    <button type="button" class="btn modern-btn btn-secondary-glass" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="multiDoorBackBtn" class="btn modern-btn btn-glass d-none" onclick="multiDoorBack()">
                         ← Back
                     </button>
-                    <button type="button" id="multiDoorCreateBtn" class="btn btn-success d-none" onclick="createMultiDoorEvent()">
+                    <button type="button" id="multiDoorNextBtn" class="btn modern-btn btn-accent-gradient" onclick="multiDoorNext()">
+                        Next: Select Doors →
+                    </button>
+                    <button type="button" id="multiDoorCreateBtn" class="btn modern-btn btn-success-gradient d-none" onclick="createMultiDoorEvent()">
+                        <span class="btn-icon">✓</span>
                         Create Event
                     </button>
                 </div>
@@ -366,18 +507,22 @@
 
     <!-- Event Details Modal -->
     <div class="modal fade" id="eventDetailsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">📅 Schedule Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modern-modal">
+                <div class="modal-header-modern">
+                    <div class="modal-icon">📅</div>
+                    <h5 class="modal-title">Schedule Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body-modern">
                     <div id="eventDetailsContent"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger" onclick="deleteSchedule()">🗑️ Delete Schedule</button>
+                <div class="modal-footer-modern">
+                    <button type="button" class="btn modern-btn btn-secondary-glass" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn modern-btn btn-danger-gradient" onclick="deleteSchedule()">
+                        <span class="btn-icon">🗑️</span>
+                        Delete Schedule
+                    </button>
                 </div>
             </div>
         </div>
@@ -385,16 +530,18 @@
 
     <!-- Toast Notifications -->
     <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
-            <div class="d-flex">
+        <div id="successToast" class="toast modern-toast toast-success" role="alert">
+            <div class="toast-content">
+                <div class="toast-icon">✓</div>
                 <div class="toast-body" id="successToastMessage"></div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
             </div>
         </div>
-        <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
-            <div class="d-flex">
+        <div id="errorToast" class="toast modern-toast toast-error" role="alert">
+            <div class="toast-content">
+                <div class="toast-icon">⚠️</div>
                 <div class="toast-body" id="errorToastMessage"></div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
