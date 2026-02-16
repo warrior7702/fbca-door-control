@@ -77,10 +77,10 @@ async function loadDoors() {
                 viaDeviceId: door.viaDeviceID || door.viaDeviceId,
                 isActive: door.isActive
             }))
-            // Filter out card readers (kept in DB for future alarm/monitoring use)
+            // Filter out card readers and emergency exits (kept in DB for future alarm/monitoring use)
             .filter(door => {
                 const name = door.doorName.toLowerCase();
-                return !name.includes('reader');
+                return !name.includes('reader') && !name.includes('emergency');
             });
         
         populateDoorDropdowns();
