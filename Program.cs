@@ -44,7 +44,7 @@ builder.Services.AddHostedService<SchedulerService>();
 // Configure Kestrel
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenLocalhost(5002); // Port 5002 as per Billy's specification
+    options.ListenAnyIP(5002); // Port 5002, accessible from network
 });
 
 // Add CORS for local development
