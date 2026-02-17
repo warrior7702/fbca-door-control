@@ -53,6 +53,16 @@ function initializeCalendar() {
         eventDidMount: function(info) {
             // Add tooltip
             info.el.title = `${info.event.title}\n${info.event.extendedProps.doorName || ''}`;
+            
+            // Apply visual hierarchy: recurring vs special events
+            const schedules = info.event.extendedProps.schedules || [];
+            const isRecurring = schedules.some(s => s.isRecurring === true);
+            
+            if (isRecurring) {
+                info.el.classList.add('event-recurring');
+            } else {
+                info.el.classList.add('event-special');
+            }
         }
     });
     
@@ -111,6 +121,7 @@ async function loadSchedules() {
             eventName: schedule.scheduleName || schedule.eventName,
             status: schedule.status || 'Pending',
             notes: schedule.notes || '',
+            isRecurring: schedule.isRecurring || false,  // Track if auto-generated from pattern
             createdAt: schedule.createdAt,
             lastModified: schedule.lastModified || schedule.updatedAt
         }));
