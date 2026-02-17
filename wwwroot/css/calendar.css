@@ -9,11 +9,18 @@
    ============================================ */
 
 :root {
+    /* FBCA Official Brand Colors (Feb 2026) */
+    --fbca-light-blue: #75D3F2;
+    --fbca-medium-blue: #004da8;
+    --fbca-dark-blue: #1B365F;
+    --fbca-light-gray: #DDE5FD;
+    --fbca-gray: #BBBDC7;
+    
     /* Primary Color Palette - FBCA Blues */
-    --primary-gradient-start: #1da0f5;
-    --primary-gradient-end: #154d72;
-    --accent-gradient-start: #1da0f5;
-    --accent-gradient-end: #0c3a5a;
+    --primary-gradient-start: #004da8;
+    --primary-gradient-end: #1B365F;
+    --accent-gradient-start: #004da8;
+    --accent-gradient-end: #1B365F;
     --success-gradient-start: #11998e;
     --success-gradient-end: #38ef7d;
     --danger-gradient-start: #eb3349;
@@ -57,7 +64,7 @@
 /* Base Body Styles */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #ffffff 0%, #1da0f5 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #1B365F 100%);
     background-attachment: fixed;
     color: var(--text-primary);
     font-size: 15px;
@@ -1245,6 +1252,57 @@ body {
     font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 500;
+}
+
+/* ============================================
+   19. RECURRING VS SPECIAL EVENT STYLING
+   ============================================ */
+
+/* Special Events - BOLD & PROMINENT */
+.fc-event.event-special {
+    background: linear-gradient(135deg, var(--fbca-medium-blue), var(--fbca-dark-blue)) !important;
+    opacity: 1 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(0, 77, 168, 0.4) !important;
+    border-left: 4px solid var(--fbca-light-blue) !important;
+}
+
+/* Recurring Schedules - FADED & SUBTLE */
+.fc-event.event-recurring {
+    background: var(--fbca-gray) !important;
+    opacity: 0.4 !important;
+    font-weight: 400 !important;
+    font-size: 0.75rem !important;
+    box-shadow: none !important;
+}
+
+.fc-event.event-recurring:hover {
+    opacity: 0.7 !important;
+    transform: scale(1.01) !important;
+}
+
+/* Hidden recurring schedules (when filter is active) */
+.fc-event.event-recurring.hidden-recurring {
+    display: none !important;
+}
+
+/* Filter toggle button */
+.btn-filter-toggle {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 2px solid var(--fbca-medium-blue) !important;
+    color: var(--fbca-dark-blue) !important;
+    font-weight: 600 !important;
+    padding: 0.625rem 1.25rem !important;
+}
+
+.btn-filter-toggle:hover {
+    background: var(--fbca-light-gray) !important;
+    border-color: var(--fbca-dark-blue) !important;
+}
+
+.btn-filter-toggle.active {
+    background: var(--fbca-medium-blue) !important;
+    color: white !important;
 }
 
 /* ============================================
