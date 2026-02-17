@@ -34,11 +34,23 @@ public class SchedulerService : BackgroundService
             "Scheduler service starting (check interval: {Interval}s, grace period: {Grace}min, re-unlock interval: {ReUnlock}min)",
             _checkIntervalSeconds, _gracePeriodMinutes, _reUnlockIntervalMinutes);
 
+        DateTime lastRecurrenceCheck = DateTime.MinValue;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                // Check schedules every loop (30 seconds)
                 await CheckAndExecuteSchedulesAsync();
+
+                // Generate recurring schedule instances once per day (at midnight or first check after)
+                var today = DateTime.Today;
+                if (lastRecurrenceCheck.Date < today)
+                {
+                    _logger.LogInformation("Running daily recurrence pattern check");
+                    await GenerateRecurringSchedulesAsync();
+                    lastRecurrenceCheck = DateTime.Now;
+                }
             }
             catch (Exception ex)
             {
@@ -50,6 +62,30 @@ public class SchedulerService : BackgroundService
         }
 
         _logger.LogInformation("Scheduler service stopping");
+    }
+
+    /// <summary>
+    /// Generate schedule instances for all active recurring patterns.
+    /// Called once per day by the scheduler.
+    /// </summary>
+    private async Task GenerateRecurringSchedulesAsync()
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var recurrenceService = scope.ServiceProvider.GetRequiredService<RecurrenceService>();
+            
+            var generated = await recurrenceService.GenerateScheduleInstancesAsync();
+            
+            if (generated > 0)
+            {
+                _logger.LogInformation("Generated {Count} schedule instances from recurring patterns", generated);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating recurring schedules");
+        }
     }
 
     private async Task CheckAndExecuteSchedulesAsync()

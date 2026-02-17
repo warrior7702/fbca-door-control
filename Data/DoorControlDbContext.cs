@@ -17,6 +17,9 @@ public class DoorControlDbContext : DbContext
     public DbSet<Door> Doors { get; set; } = null!;
     public DbSet<UnlockSchedule> UnlockSchedules { get; set; } = null!;
     public DbSet<ScheduleActionLog> ScheduleActionLogs { get; set; } = null!;
+    public DbSet<RecurrencePattern> RecurrencePatterns { get; set; } = null!;
+    public DbSet<RecurrencePatternDoor> RecurrencePatternDoors { get; set; } = null!;
+    public DbSet<RecurrenceInstance> RecurrenceInstances { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

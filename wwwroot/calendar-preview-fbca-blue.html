@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBCA Door Control - Preview (FBCA Blue Gradient)</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* FBCA Blue Gradient Theme - PREVIEW */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            /* White to FBCA Blue gradient */
+            background: linear-gradient(135deg, #ffffff 0%, #1da0f5 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .preview-banner {
+            background: rgba(252, 130, 37, 0.95);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(29, 160, 245, 0.15);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #154d72;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+        }
+
+        .header p {
+            color: #0c3a5a;
+            font-size: 1.1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #1da0f5 0%, #154d72 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(29, 160, 245, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(29, 160, 245, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #fc8225 0%, #fc8224 100%);
+        }
+
+        /* Calendar Container */
+        #calendar {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(29, 160, 245, 0.2);
+        }
+
+        /* FullCalendar Customization */
+        .fc {
+            background: transparent;
+        }
+
+        .fc-toolbar-title {
+            color: #154d72 !important;
+            font-weight: 700 !important;
+        }
+
+        .fc-button {
+            background: linear-gradient(135deg, #1da0f5 0%, #154d72 100%) !important;
+            border: none !important;
+            box-shadow: 0 2px 4px rgba(29, 160, 245, 0.3) !important;
+        }
+
+        .fc-button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .fc-event {
+            background: linear-gradient(135deg, #1da0f5 0%, #154d72 100%) !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 4px 8px !important;
+            font-weight: 500 !important;
+        }
+
+        /* Sample Schedule Cards */
+        .schedule-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .schedule-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .schedule-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(29, 160, 245, 0.25);
+        }
+
+        .schedule-card h3 {
+            color: #154d72;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .schedule-card .time {
+            color: #0c3a5a;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .schedule-card .doors {
+            color: #1da0f5;
+            font-size: 0.9rem;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .status-active {
+            background: rgba(72, 187, 120, 0.2);
+            color: #22543d;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .status-scheduled {
+            background: rgba(29, 160, 245, 0.2);
+            color: #154d72;
+            border: 1px solid rgba(29, 160, 245, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Preview Banner -->
+        <div class="preview-banner">
+            🎨 PREVIEW MODE - FBCA Blue Gradient (White → #1da0f5)
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>🚪 FBCA Door Control System</h1>
+            <p>Multi-Building Smart Door Scheduling</p>
+        </div>
+
+        <!-- Main Calendar Card -->
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="color: #154d72; font-size: 1.75rem; font-weight: 600;">Event Calendar</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn">+ Create Event</button>
+                    <button class="btn btn-secondary">Door Filter</button>
+                </div>
+            </div>
+            
+            <div id="calendar"></div>
+        </div>
+
+        <!-- Sample Schedule Cards -->
+        <div class="glass-card">
+            <h2 style="color: #154d72; font-size: 1.75rem; font-weight: 600; margin-bottom: 1.5rem;">Upcoming Events</h2>
+            
+            <div class="schedule-preview">
+                <div class="schedule-card">
+                    <h3>Ash Wednesday Service</h3>
+                    <div class="time">⏰ 6:00 PM - 8:00 PM</div>
+                    <div class="doors">🚪 Wade, Main Church, Student Center (3 doors)</div>
+                    <span class="status-badge status-scheduled">Scheduled</span>
+                </div>
+
+                <div class="schedule-card">
+                    <h3>Sunday Morning Worship</h3>
+                    <div class="time">⏰ 8:00 AM - 12:00 PM</div>
+                    <div class="doors">🚪 Main Church, PCB (2 doors)</div>
+                    <span class="status-badge status-active">Active Now</span>
+                </div>
+
+                <div class="schedule-card">
+                    <h3>Youth Group</h3>
+                    <div class="time">⏰ 6:30 PM - 9:00 PM</div>
+                    <div class="doors">🚪 Student Center (1 door)</div>
+                    <span class="status-badge status-scheduled">Scheduled</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Reference -->
+        <div class="glass-card">
+            <h3 style="color: #154d72; margin-bottom: 1rem;">FBCA Color Reference</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="background: #1da0f5; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
+                    <strong>Primary Blue</strong><br>#1da0f5
+                </div>
+                <div style="background: #154d72; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
+                    <strong>Dark Blue</strong><br>#154d72
+                </div>
+                <div style="background: #fc8225; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
+                    <strong>Orange Accent</strong><br>#fc8225
+                </div>
+                <div style="background: linear-gradient(135deg, #ffffff 0%, #1da0f5 100%); color: #154d72; padding: 1rem; border-radius: 12px; text-align: center; border: 2px solid #1da0f5;">
+                    <strong>Body Gradient</strong><br>White → Blue
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                events: [
+                    {
+                        title: 'Ash Wednesday Service (3 doors)',
+                        start: '2026-02-26T18:00:00',
+                        end: '2026-02-26T20:00:00'
+                    },
+                    {
+                        title: 'Sunday Morning Worship (2 doors)',
+                        start: '2026-02-23T08:00:00',
+                        end: '2026-02-23T12:00:00'
+                    },
+                    {
+                        title: 'Youth Group (1 door)',
+                        start: '2026-02-19T18:30:00',
+                        end: '2026-02-19T21:00:00'
+                    }
+                ]
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>
