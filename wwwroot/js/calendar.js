@@ -7,6 +7,13 @@ let allSchedules = [];
 let currentSelectedEvent = null;
 let doorsByBuilding = {};
 
+// Helper: Clean up recurring event names (remove "2a ", "3b ", etc.)
+function cleanEventName(eventName, isRecurring) {
+    if (!isRecurring || !eventName) return eventName;
+    // Remove leading instance numbers like "2a ", "3b ", etc.
+    return eventName.replace(/^\d+[a-z]?\s+/i, '');
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
@@ -202,6 +209,12 @@ function renderCalendarEvents() {
             })
             .join(', ');
         
+        // Check if any schedule in this group is recurring
+        const isRecurring = group.schedules.some(s => s.isRecurring === true);
+        
+        // Clean up event name (remove instance numbers like "2a " for recurring events)
+        const cleanedEventName = cleanEventName(group.eventName, isRecurring);
+        
         // Determine event color based on status
         let color = '#0d6efd'; // pending = blue
         if (group.status === 'Executed') color = '#198754'; // green
@@ -210,7 +223,7 @@ function renderCalendarEvents() {
         
         return {
             id: `event_${group.eventName}_${group.unlockTime}`,
-            title: doorCount > 1 ? `${group.eventName} (${doorCount} doors)` : group.eventName,
+            title: doorCount > 1 ? `${cleanedEventName} (${doorCount} doors)` : cleanedEventName,
             start: group.unlockTime,
             end: group.lockTime,
             backgroundColor: color,
