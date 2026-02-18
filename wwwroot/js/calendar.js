@@ -147,10 +147,10 @@ async function loadSchedules() {
             doorId: schedule.doorID || schedule.doorId,
             unlockTime: schedule.startTime || schedule.unlockTime,
             lockTime: schedule.endTime || schedule.lockTime,
-            eventName: schedule.scheduleName || schedule.eventName,
-            status: schedule.status || 'Pending',
-            notes: schedule.notes || '',
-            isRecurring: schedule.isRecurring || false,  // Track if auto-generated from pattern
+            eventName: schedule.ScheduleName || schedule.scheduleName || schedule.eventName,
+            status: schedule.status || schedule.Status || 'Pending',
+            notes: schedule.notes || schedule.Notes || '',
+            isRecurring: schedule.isRecurring || schedule.IsRecurring || false,  // Track if auto-generated from pattern
             createdAt: schedule.createdAt,
             lastModified: schedule.lastModified || schedule.updatedAt
         }));
