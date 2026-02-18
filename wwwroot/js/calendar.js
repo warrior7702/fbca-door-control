@@ -391,10 +391,13 @@ function showDaySummary(selectedDate) {
             const lockTime = new Date(schedule.lockTime);
             const timeRange = `${formatTime(unlockTime)} - ${formatTime(lockTime)}`;
             
+            // Clean event name if recurring
+            const displayName = cleanEventName(schedule.eventName || 'Unnamed Event', schedule.isRecurring);
+            
             scheduleListHTML += `
                 <div class="day-schedule-item">
                     <div class="day-schedule-door">${doorName}</div>
-                    <div class="day-schedule-event">${schedule.eventName || 'Unnamed Event'}</div>
+                    <div class="day-schedule-event">${displayName}</div>
                     <div class="day-schedule-time">${timeRange}</div>
                 </div>
             `;
@@ -540,10 +543,14 @@ function showEventDetails(event) {
         doorListHTML += '</div>';
     }
     
+    // Check if event is recurring and clean name
+    const isRecurring = props.schedules && props.schedules.some(s => s.isRecurring === true);
+    const displayEventName = cleanEventName(props.eventName, isRecurring);
+    
     const content = `
         <div class="event-detail-row">
             <span class="event-detail-label">Event Name:</span>
-            <span class="event-detail-value">${props.eventName}</span>
+            <span class="event-detail-value">${displayEventName}</span>
         </div>
         <div class="event-detail-row">
             <span class="event-detail-label">Unlock Time:</span>
@@ -733,6 +740,10 @@ function filterDoors(building) {
         const events = Object.values(eventGroups).map(group => {
             const doorCount = group.schedules.length;
             
+            // Check if recurring and clean event name
+            const isRecurring = group.schedules.some(s => s.isRecurring === true);
+            const cleanedEventName = cleanEventName(group.eventName, isRecurring);
+            
             let color = '#0d6efd';
             if (group.status === 'Executed') color = '#198754';
             if (group.status === 'Failed') color = '#dc3545';
@@ -740,7 +751,7 @@ function filterDoors(building) {
             
             return {
                 id: `event_${group.eventName}_${group.unlockTime}`,
-                title: doorCount > 1 ? `${group.eventName} (${doorCount} doors)` : group.eventName,
+                title: doorCount > 1 ? `${cleanedEventName} (${doorCount} doors)` : cleanedEventName,
                 start: group.unlockTime,
                 end: group.lockTime,
                 backgroundColor: color,
