@@ -57,11 +57,35 @@ function initializeCalendar() {
             showEventDetails(info.event);
         },
         
+        // Event content - take control to prevent FullCalendar auto-abbreviations (no "2a", "3a" prefixes!)
+        eventContent: function(arg) {
+            const props = arg.event.extendedProps;
+            const doorCount = props.doorCount || 1;
+            const status = props.status || 'Pending';
+            
+            // Build tooltip
+            const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+            const endTime = arg.event.end ? new Date(arg.event.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+            const timeRange = startTime && endTime ? `${startTime} - ${endTime}` : '';
+            
+            const doorNames = props.schedules ? props.schedules.map(s => {
+                const door = allDoors.find(d => d.doorId === s.doorId);
+                return door ? door.doorName : `Door ${s.doorId}`;
+            }).join(', ') : '';
+            
+            const tooltip = `${arg.event.title}\nTime: ${timeRange}\nDoors: ${doorCount}\nStatus: ${status}\n${doorNames}`;
+            
+            return {
+                html: `<div class="fc-event-main-frame" title="${tooltip}">
+                    <div class="fc-event-title-container">
+                        <div class="fc-event-title fc-sticky">${arg.event.title}</div>
+                    </div>
+                </div>`
+            };
+        },
+        
         // Event rendering
         eventDidMount: function(info) {
-            // Add tooltip
-            info.el.title = `${info.event.title}\n${info.event.extendedProps.doorName || ''}`;
-            
             // Apply visual hierarchy: recurring vs special events
             const schedules = info.event.extendedProps.schedules || [];
             const isRecurring = schedules.some(s => s.isRecurring === true);
