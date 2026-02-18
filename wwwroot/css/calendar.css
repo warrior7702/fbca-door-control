@@ -624,6 +624,28 @@ body {
     text-overflow: ellipsis !important;
 }
 
+/* Week/Day View Improvements - Smaller text for tight spaces */
+.fc-timegrid-event .fc-event-main {
+    padding: 2px 4px !important;
+    min-height: 30px !important;
+}
+
+.fc-timegrid-event .fc-event-title {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    white-space: normal !important;
+}
+
+.fc-timegrid-event .fc-event-time {
+    font-size: 0.7rem !important;
+    line-height: 1.2 !important;
+}
+
 /* Event Colors by Status */
 .event-pending {
     background: linear-gradient(135deg, #667eea, #764ba2) !important;
