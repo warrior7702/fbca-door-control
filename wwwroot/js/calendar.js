@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadDoors();
     loadSchedules();
     checkHealth();
+    loadUserName();
     
     // Refresh every 30 seconds
     setInterval(() => {
@@ -99,6 +100,27 @@ async function loadDoors() {
     } catch (error) {
         console.error('Error loading doors:', error);
         showError('Failed to load doors: ' + error.message);
+    }
+}
+
+// Load current user's name from authentication
+async function loadUserName() {
+    try {
+        const response = await fetch(`${API_BASE}/auth/user`);
+        if (!response.ok) throw new Error('Failed to load user info');
+        
+        const data = await response.json();
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl && data.givenName) {
+            userNameEl.textContent = data.givenName;
+        }
+    } catch (error) {
+        console.error('Error loading user name:', error);
+        // Silently fail - not critical
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl) {
+            userNameEl.textContent = 'User';
+        }
     }
 }
 
