@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Stained Glass Window Favicon -->
+  <!-- Outer arch frame -->
+  <path d="M50 5 C20 5 5 25 5 45 L5 95 L95 95 L95 45 C95 25 80 5 50 5 Z" fill="#1B365F" stroke="#000" stroke-width="2"/>
+  
+  <!-- Top section - rays -->
+  <path d="M50 10 L30 30 L50 35 L70 30 Z" fill="#75D3F2"/>
+  <path d="M30 30 L10 40 L25 50 L50 35 Z" fill="#004da8"/>
+  <path d="M70 30 L90 40 L75 50 L50 35 Z" fill="#004da8"/>
+  <path d="M10 40 L5 60 L25 50 Z" fill="#75D3F2"/>
+  <path d="M90 40 L95 60 L75 50 Z" fill="#75D3F2"/>
+  
+  <!-- Center circle with cross -->
+  <circle cx="50" cy="40" r="18" fill="#FFD700" stroke="#000" stroke-width="1.5"/>
+  <rect x="46" y="28" width="8" height="24" fill="#1B365F"/>
+  <rect x="38" y="36" width="24" height="8" fill="#1B365F"/>
+  
+  <!-- Middle section -->
+  <path d="M25 50 L5 70 L30 70 L50 58 Z" fill="#D2691E"/>
+  <path d="M75 50 L95 70 L70 70 L50 58 Z" fill="#D2691E"/>
+  <path d="M50 58 L30 70 L50 85 L70 70 Z" fill="#228B22"/>
+  
+  <!-- Bottom section -->
+  <path d="M5 70 L5 95 L30 70 Z" fill="#87CEEB"/>
+  <path d="M95 70 L95 95 L70 70 Z" fill="#87CEEB"/>
+  <path d="M30 70 L50 85 L70 70 L70 95 L30 95 Z" fill="#4169E1"/>
+  <rect x="48" y="70" width="4" height="25" fill="#1B365F"/>
+</svg>

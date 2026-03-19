@@ -65,6 +65,26 @@ public class UnlockSchedule
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// Execution status: Pending, Executed, Failed, Cancelled
+    /// </summary>
+    [Required]
+    [MaxLength(20)]
+    public string Status { get; set; } = "Pending";
+
+    /// <summary>
+    /// Is this schedule part of a recurring pattern?
+    /// Used for visual hierarchy: recurring schedules fade, special events pop
+    /// </summary>
+    [Required]
+    public bool IsRecurring { get; set; } = false;
+
+    /// <summary>
+    /// If this schedule was generated from a recurring pattern, this is the instance ID.
+    /// Links to RecurrenceInstances table.
+    /// </summary>
+    public int? RecurrenceInstanceId { get; set; }
+
+    /// <summary>
     /// Schedule priority (higher number = higher priority).
     /// Used to prevent lower-priority schedules from overriding higher-priority ones.
     /// Priority levels:

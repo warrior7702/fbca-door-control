@@ -1,246 +1,358 @@
-/* FBCA Door Control Calendar Styles */
+/* ================================================
+   FBCA Door Control - Modern UI Design
+   Featuring: Glassmorphism, Smooth Animations, 
+   Professional Typography & Church-Appropriate Colors
+   ================================================ */
 
+/* ============================================
+   1. ROOT VARIABLES & BASE STYLES
+   ============================================ */
+
+:root {
+    /* FBCA Official Brand Colors */
+    --fbca-light-blue: #75D3F2;
+    --fbca-medium-blue: #004da8;
+    --fbca-dark-blue: #1B365F;
+    --fbca-light-gray: #DDE5FD;
+    --fbca-gray: #BBBDC7;
+    
+    /* Primary Gradients - Lighter & Brighter! */
+    --primary-gradient-start: #e0f2fe;
+    --primary-gradient-end: #75D3F2;
+    --accent-gradient-start: #75D3F2;
+    --accent-gradient-end: #004da8;
+    --success-gradient-start: #11998e;
+    --success-gradient-end: #38ef7d;
+    --danger-gradient-start: #eb3349;
+    --danger-gradient-end: #f45c43;
+    
+    /* Neutral Colors */
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --text-primary: #2d3748;
+    --text-secondary: #718096;
+    --text-muted: #BBBDC7;
+    
+    /* Event Colors */
+    --event-special: #004da8;
+    --event-recurring: #BBBDC7;
+    
+    /* Glass Effect Colors - Brighter! */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: rgba(31, 38, 135, 0.1);
+    
+    /* Spacing & Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.16);
+    
+    /* Transitions */
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Body Styles */
 body {
-    background-color: #f8f9fa;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
 }
 
-/* Calendar Container */
-#calendar {
-    max-width: 100%;
-    margin: 0 auto;
+/* Smooth Scrolling */
+* {
+    scroll-behavior: smooth;
 }
 
-/* Stat Items in Sidebar */
-.stat-item {
-    padding: 10px 0;
-    border-bottom: 1px solid #dee2e6;
+/* ============================================
+   2. MODERN NAVIGATION BAR
+   ============================================ */
+
+.modern-navbar {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-md) 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: var(--transition-normal);
 }
 
-.stat-item:last-child {
-    border-bottom: none;
+.navbar-brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
 }
 
-.stat-item strong {
-    display: block;
-    margin-bottom: 5px;
-    color: #495057;
-    font-size: 0.9rem;
+.brand-icon {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: float 3s ease-in-out infinite;
 }
 
-.stat-item .badge {
-    font-size: 1.1rem;
-    padding: 6px 12px;
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
 }
 
-/* Card Styling */
-.card {
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 10px;
+.brand-text {
+    display: flex;
+    flex-direction: column;
 }
 
-.card-header {
-    border-radius: 10px 10px 0 0 !important;
-    border-bottom: 1px solid #dee2e6;
+.brand-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
 }
 
-/* FullCalendar Custom Styles */
-.fc {
+.brand-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.navbar-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Welcome Section */
+.welcome-section {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: linear-gradient(135deg, rgba(0, 77, 168, 0.1), rgba(27, 54, 95, 0.1));
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+}
+
+.welcome-text {
     font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-.fc-event {
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 2px 4px;
-    font-size: 0.85rem;
-    transition: transform 0.2s, box-shadow 0.2s;
+.user-name {
+    color: var(--fbca-medium-blue);
+    font-weight: 600;
+    margin-left: 0.25rem;
 }
 
-.fc-event:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+/* ============================================
+   3. MODERN BUTTONS
+   ============================================ */
+
+.modern-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.025em;
+    border: none;
+    transition: var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-.fc-daygrid-event {
-    white-space: normal;
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
 }
 
-/* Event color by status */
-.event-pending {
-    background-color: #0d6efd;
-    border-color: #0b5ed7;
+.modern-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
-.event-executed {
-    background-color: #198754;
-    border-color: #157347;
+.btn-icon {
+    font-size: 1.1rem;
+    line-height: 1;
 }
 
-.event-failed {
-    background-color: #dc3545;
-    border-color: #bb2d3b;
+.btn-text {
+    position: relative;
+    z-index: 1;
 }
 
-.event-past {
-    background-color: #6c757d;
-    border-color: #5a6268;
-    opacity: 0.6;
+/* Button Variants */
+.btn-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
 }
 
-/* Modal Enhancements */
-.modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.85);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary-gradient {
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
     color: white;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
-.modal-header .btn-close {
-    filter: brightness(0) invert(1);
-}
-
-.modal-content {
-    border-radius: 10px;
-    border: none;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-
-/* Form Styling */
-.form-label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.5rem;
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-
-/* Buttons */
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-primary:hover {
+.btn-primary-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
 }
 
-.btn-success {
-    transition: transform 0.2s;
+.btn-accent-gradient {
+    background: linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end));
+    color: white;
+    box-shadow: 0 4px 16px rgba(240, 147, 251, 0.3);
 }
 
-.btn-success:hover {
+.btn-accent-gradient:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(240, 147, 251, 0.4);
 }
 
-.btn-danger {
-    transition: transform 0.2s;
+.btn-success-gradient {
+    background: linear-gradient(135deg, var(--success-gradient-start), var(--success-gradient-end));
+    color: white;
+    box-shadow: 0 4px 16px rgba(17, 153, 142, 0.3);
 }
 
-.btn-danger:hover {
+.btn-success-gradient:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(17, 153, 142, 0.4);
 }
 
-/* Health Status */
-#healthStatus {
-    font-size: 0.9rem;
-}
-
-.health-ok {
-    color: #198754;
+.btn-warning-gradient {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #78350f;
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.3);
     font-weight: 600;
 }
 
-.health-error {
-    color: #dc3545;
-    font-weight: 600;
+.btn-warning-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(251, 191, 36, 0.4);
+    color: #78350f;
 }
 
-/* Event Details */
-.event-detail-row {
-    padding: 8px 0;
-    border-bottom: 1px solid #dee2e6;
+.btn-danger-gradient {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 
-.event-detail-row:last-child {
-    border-bottom: none;
+.btn-danger-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(17, 153, 142, 0.4);
 }
 
-.event-detail-label {
-    font-weight: 600;
-    color: #495057;
-    display: inline-block;
-    width: 140px;
+.btn-danger-gradient {
+    background: linear-gradient(135deg, var(--danger-gradient-start), var(--danger-gradient-end));
+    color: white;
+    box-shadow: 0 4px 16px rgba(235, 51, 73, 0.3);
 }
 
-.event-detail-value {
-    color: #212529;
+.btn-danger-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(235, 51, 73, 0.4);
 }
 
-/* Status Badges */
-.status-badge-pending {
-    background-color: #0d6efd;
+.btn-secondary-glass {
+    background: rgba(113, 128, 150, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(113, 128, 150, 0.2);
+    color: var(--text-secondary);
 }
 
-.status-badge-executed {
-    background-color: #198754;
+/* Filter Button Active State */
+.btn-active {
+    background: linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end)) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(240, 147, 251, 0.4) !important;
 }
 
-.status-badge-failed {
-    background-color: #dc3545;
+/* Calendar Toolbar */
+.calendar-toolbar {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
 }
 
-.status-badge-cancelled {
-    background-color: #6c757d;
+.btn-secondary-glass:hover {
+    background: rgba(113, 128, 150, 0.15);
+    color: var(--text-primary);
 }
 
-/* Navbar */
-.navbar {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* ============================================
+   4. GLASS CARDS
+   ============================================ */
+
+.main-content {
+    padding: var(--spacing-xl);
+    min-height: calc(100vh - 80px);
 }
 
-/* Toast Notifications */
-.toast-container {
-    z-index: 9999;
-}
-
-/* Loading Spinner */
-.spinner-border-sm {
-    width: 1rem;
-    height: 1rem;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .col-md-3 {
-        margin-bottom: 20px;
-    }
-    
-    .fc {
-        font-size: 0.85rem;
-    }
-    
-    .navbar-brand {
-        font-size: 1rem;
-    }
-}
-
-/* Animation for cards */
-.card {
-    animation: fadeInUp 0.4s ease-in-out;
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-normal);
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out;
 }
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
@@ -248,28 +360,1257 @@ body {
     }
 }
 
-/* Event tooltip */
-.fc-event-title {
+.glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.card-header-modern {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+.card-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.card-header-modern h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.025em;
+}
+
+.card-body-modern {
+    padding: var(--spacing-lg);
+}
+
+/* ============================================
+   5. STATISTICS CARD
+   ============================================ */
+
+.stat-card {
+    margin-bottom: var(--spacing-lg);
+}
+
+.stat-item-modern {
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    transition: var(--transition-fast);
+}
+
+.stat-item-modern:last-child {
+    border-bottom: none;
+}
+
+.stat-item-modern:hover {
+    background: rgba(255, 255, 255, 0.05);
+    padding-left: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.stat-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-badge-primary {
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+}
+
+.stat-badge-success {
+    background: linear-gradient(135deg, var(--success-gradient-start), var(--success-gradient-end));
+    color: white;
+}
+
+.stat-value-small {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.text-muted-modern {
+    color: var(--text-muted);
+}
+
+/* ============================================
+   6. DOOR FILTER CARD
+   ============================================ */
+
+.door-filter-card {
+    margin-bottom: var(--spacing-lg);
+}
+
+.building-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.building-group:last-child {
+    margin-bottom: 0;
+}
+
+.building-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.building-emoji {
+    font-size: 1.1rem;
+}
+
+.modern-select {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+    backdrop-filter: blur(10px);
+}
+
+.modern-select:focus {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: var(--primary-gradient-start);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.modern-select:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.helper-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+/* ============================================
+   7. HEALTH STATUS CARD
+   ============================================ */
+
+.health-card {
+    margin-bottom: var(--spacing-lg);
+}
+
+.health-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.health-ok {
+    color: #10b981;
     font-weight: 600;
 }
 
-/* Calendar toolbar buttons */
+.health-error {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* ============================================
+   8. CALENDAR CARD
+   ============================================ */
+
+.calendar-card {
+    min-height: 600px;
+}
+
+.calendar-wrapper {
+    padding: var(--spacing-md);
+}
+
+/* FullCalendar Modern Overrides */
+.fc {
+    font-family: 'Inter', sans-serif;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--text-primary);
+}
+
 .fc-button {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600 !important;
     text-transform: capitalize !important;
+    transition: var(--transition-fast) !important;
 }
 
-.fc-button-primary {
-    background-color: #667eea !important;
-    border-color: #667eea !important;
-}
-
-.fc-button-primary:hover {
-    background-color: #5568d3 !important;
-    border-color: #5568d3 !important;
+.fc-button:hover {
+    background: rgba(255, 255, 255, 0.85) !important;
+    transform: translateY(-2px);
 }
 
 .fc-button-primary:not(:disabled):active,
 .fc-button-primary:not(:disabled).fc-button-active {
-    background-color: #4451b8 !important;
-    border-color: #4451b8 !important;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end)) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.fc-daygrid-day-number {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fc-col-header-cell {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.fc-event {
+    cursor: pointer;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 6px 12px !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden !important;
+}
+
+.fc-event:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+.fc-event-title {
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: block !important;
+    line-height: 1.4 !important;
+}
+
+.fc-event-title-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Status indicator dot (left side of event) */
+.event-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Week/Day View Improvements - Smaller text for tight spaces */
+.fc-timegrid-event .fc-event-main {
+    padding: 2px 4px !important;
+    min-height: 30px !important;
+}
+
+.fc-timegrid-event .fc-event-title {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    white-space: normal !important;
+}
+
+.fc-timegrid-event .fc-event-time {
+    font-size: 0.7rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Event Colors by Status */
+.event-pending {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+.event-executed {
+    background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+}
+
+.event-failed {
+    background: linear-gradient(135deg, #eb3349, #f45c43) !important;
+}
+
+.event-past {
+    background: linear-gradient(135deg, #868f96, #596164) !important;
+    opacity: 0.6;
+}
+
+/* Visual Hierarchy: Special vs Recurring Events */
+.fc-event.event-special {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    border-left: 4px solid #60a5fa !important;
+    opacity: 1 !important;
+    font-weight: 700 !important;
+    color: white !important;
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.4) !important;
+}
+
+.fc-event.event-special:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.5) !important;
+}
+
+.fc-event.event-recurring {
+    background: var(--fbca-gray) !important;
+    opacity: 0.4 !important;
+    font-weight: 400 !important;
+    box-shadow: none !important;
+}
+
+.fc-event.event-recurring:hover {
+    opacity: 0.6 !important;
+}
+
+/* Cancelled Events */
+.fc-event.event-cancelled {
+    background: #9ca3af !important;
+    opacity: 0.5 !important;
+    text-decoration: line-through !important;
+    font-style: italic !important;
+    box-shadow: none !important;
+}
+
+.fc-event.event-cancelled:hover {
+    opacity: 0.7 !important;
+}
+
+.fc-event.event-cancelled .fc-event-title:after {
+    content: " (Cancelled)";
+    font-size: 0.85em;
+    font-style: normal;
+}
+
+/* ============================================
+   9. MODERN MODALS
+   ============================================ */
+
+.modal-content.modern-modal {
+    background: var(--glass-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+}
+
+.modal-header-modern {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+    border: none;
+}
+
+.modal-header-accent {
+    background: linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end));
+}
+
+.modal-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.modal-body-modern {
+    padding: var(--spacing-xl);
+}
+
+.modal-body-scrollable {
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+.modal-body-scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 4px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
+}
+
+.modal-footer-modern {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+}
+
+/* ============================================
+   10. MODERN FORM ELEMENTS
+   ============================================ */
+
+.form-group-modern {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.label-icon {
+    font-size: 1rem;
+}
+
+.modern-input {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+    backdrop-filter: blur(10px);
+    width: 100%;
+}
+
+.modern-input:focus {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: var(--primary-gradient-start);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.modern-input:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.modern-input::placeholder {
+    color: var(--text-muted);
+}
+
+.modern-input-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.form-label-small {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Info Box */
+.info-box {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-lg);
+}
+
+.info-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.info-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ============================================
+   11. MULTI-DOOR MODAL ELEMENTS
+   ============================================ */
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.step-header h6 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.step-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.building-section-modern {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: var(--transition-fast);
+}
+
+.building-section-modern:hover {
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: var(--shadow-sm);
+}
+
+.building-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.building-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.building-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-time-toggle {
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    color: #f57c00;
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.btn-time-toggle:hover {
+    background: rgba(255, 152, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-select-all {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    color: var(--primary-gradient-start);
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.btn-select-all:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.custom-times-box {
+    background: rgba(255, 243, 205, 0.5);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.custom-times-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #f57c00;
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.doors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.door-checkbox-multi {
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.door-checkbox-multi:hover {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: var(--primary-gradient-start);
+    transform: translateX(4px);
+}
+
+.door-checkbox-multi input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-gradient-start);
+}
+
+.door-checkbox-multi label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.selected-preview {
+    background: rgba(56, 239, 125, 0.1);
+    border: 2px solid rgba(17, 153, 142, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.selected-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.selected-icon {
+    font-size: 1.25rem;
+    color: #10b981;
+}
+
+.selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.selected-door-badge-multi {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, var(--success-gradient-start), var(--success-gradient-end));
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+.selected-door-badge-multi.custom-time {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+}
+
+/* ============================================
+   12. TOAST NOTIFICATIONS
+   ============================================ */
+
+.toast-container {
+    z-index: 9999;
+}
+
+.modern-toast {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xl);
+    border: none;
+}
+
+.toast-success {
+    border-left: 4px solid #10b981;
+}
+
+.toast-error {
+    border-left: 4px solid #ef4444;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+}
+
+.toast-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.toast-body {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* ============================================
+   13. RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .main-content {
+        padding: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 992px) {
+    .navbar-actions {
+        width: 100%;
+        margin-top: var(--spacing-sm);
+    }
+    
+    .modern-btn {
+        flex: 1;
+    }
+    
+    .btn-text {
+        display: none;
+    }
+    
+    .btn-icon {
+        font-size: 1.25rem;
+    }
+    
+    .brand-title {
+        font-size: 1rem;
+    }
+    
+    .brand-subtitle {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: var(--spacing-md);
+    }
+    
+    .glass-card {
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .card-header-modern,
+    .card-body-modern {
+        padding: var(--spacing-md);
+    }
+    
+    .modal-header-modern,
+    .modal-body-modern,
+    .modal-footer-modern {
+        padding: var(--spacing-md);
+    }
+    
+    .fc-toolbar-title {
+        font-size: 1.1rem !important;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .doors-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .brand-icon {
+        font-size: 1.5rem;
+    }
+    
+    .navbar-brand-wrapper {
+        gap: var(--spacing-sm);
+    }
+    
+    .modern-btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* ============================================
+   14. LOADING & ANIMATIONS
+   ============================================ */
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* ============================================
+   15. PRINT STYLES
+   ============================================ */
+
+@media print {
+    body {
+        background: white;
+    }
+    
+    .modern-navbar,
+    .navbar-actions,
+    .modal,
+    .toast-container {
+        display: none !important;
+    }
+    
+    .glass-card {
+        background: white;
+        border: 1px solid #ddd;
+        box-shadow: none;
+    }
+}
+
+/* ============================================
+   16. ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus Visible */
+*:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .glass-card,
+    .modern-input,
+    .modern-select {
+        border-width: 2px;
+    }
+}
+
+/* ============================================
+   17. EVENT DETAIL DOOR LIST STYLES
+   ============================================ */
+
+.event-door-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.event-door-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.event-door-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.event-door-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* ============================================
+   18. DAY SUMMARY STYLES
+   ============================================ */
+
+.day-schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.day-schedule-item {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.day-schedule-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.day-schedule-door {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.day-schedule-event {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.day-schedule-time {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ============================================
+   18. RECURRING SCHEDULE STYLES
+   ============================================ */
+
+.day-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.day-checkbox:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.day-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--fbca-medium-blue);
+}
+
+.day-checkbox input[type="checkbox"]:checked + span {
+    font-weight: 700;
+    color: var(--fbca-dark-blue);
+}
+
+/* ============================================
+   19. STATUS BADGES
+   ============================================ */
+
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.85em;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Pending - Blue */
+.status-badge-pending {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Executing - Yellow/Amber */
+.status-badge-executing {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #78350f;
+    box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+    font-weight: 700;
+}
+
+/* Executed - Green */
+.status-badge-executed {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Failed - Red */
+.status-badge-failed {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    animation: pulse-error 2s ease-in-out infinite;
+}
+
+/* Cancelled - Gray */
+.status-badge-cancelled {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    color: white;
+    box-shadow: 0 2px 4px rgba(156, 163, 175, 0.3);
+}
+
+/* Running - Teal (alternative to Executing) */
+.status-badge-running {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+    box-shadow: 0 2px 4px rgba(20, 184, 166, 0.3);
+}
+
+/* Pulse animation for failed status */
+@keyframes pulse-error {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+}
+
+/* Badge variations for different contexts */
+.stat-badge {
+    padding: 0.25em 0.5em;
+    font-size: 0.75em;
+    border-radius: 0.25rem;
+}
+
+.stat-badge-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.stat-badge-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.stat-badge-warning {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #78350f;
+}
+
+.stat-badge-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+/* ============================================
+   END OF STYLES
+   ============================================ */
+
+/* Recurring Schedule Styles */
+.days-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.day-checkbox {
+    position: relative;
+    cursor: pointer;
+}
+
+.day-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.day-checkbox span {
+    display: inline-block;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(27, 54, 95, 0.2);
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 60px;
+    text-align: center;
+}
+
+.day-checkbox input[type="checkbox"]:checked + span {
+    background: linear-gradient(135deg, #1B365F 0%, #004da8 100%);
+    border-color: #1B365F;
+    color: white;
+}
+
+.day-checkbox:hover span {
+    border-color: #004da8;
+    background: rgba(0, 77, 168, 0.1);
+}
+
+.btn-success-gradient {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+}
+
+.btn-success-gradient:hover {
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
 }

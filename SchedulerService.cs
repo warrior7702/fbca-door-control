@@ -236,6 +236,20 @@ public class SchedulerService : BackgroundService
                 _logger.LogError(
                     "Failed to {Action} door {DoorId}: {Error}",
                     actionType, schedule.DoorID, response.ErrorMessage);
+                
+                // Update schedule status to Failed
+                schedule.Status = "Failed";
+            }
+            else if (actionType == "LOCK")
+            {
+                // Lock succeeded - mark schedule as Executed (completed)
+                schedule.Status = "Executed";
+            }
+            else if (actionType == "UNLOCK" && schedule.Status == "Pending")
+            {
+                // First unlock succeeded - schedule is now executing
+                // Don't overwrite "Executed" status from previous lock
+                schedule.Status = "Executing";
             }
         }
         catch (Exception ex)
@@ -246,11 +260,13 @@ public class SchedulerService : BackgroundService
 
             actionLog.Success = false;
             actionLog.ErrorMessage = ex.Message;
+            schedule.Status = "Failed";
         }
         finally
         {
             // Always log the action (audit trail)
             dbContext.ScheduleActionLogs.Add(actionLog);
+            schedule.UpdatedAt = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
         }
     }

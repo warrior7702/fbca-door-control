@@ -37,3 +37,55 @@ public class ScheduleCreateResponse
     public int ScheduleID { get; set; }
     public string Message { get; set; } = string.Empty;
 }
+
+public class BatchScheduleDoorRequest
+{
+    public int DoorId { get; set; }
+    public DateTime? CustomStartTime { get; set; }
+    public DateTime? CustomEndTime { get; set; }
+}
+
+public class CreateBatchScheduleRequest
+{
+    public string EventName { get; set; } = string.Empty;
+    public DateTime DefaultStartTime { get; set; }
+    public DateTime DefaultEndTime { get; set; }
+    public List<BatchScheduleDoorRequest> Doors { get; set; } = new();
+    public string? RecurrencePattern { get; set; }
+    public DateTime? RecurrenceEndDate { get; set; }
+    public string? Source { get; set; }
+}
+
+public class BatchScheduleCreateResponse
+{
+    public string Message { get; set; } = string.Empty;
+    public List<int> ScheduleIds { get; set; } = new();
+    public int SuccessCount { get; set; }
+    public int ErrorCount { get; set; }
+    public List<string>? Errors { get; set; }
+}
+
+/// <summary>
+/// DTO for a currently active schedule (door is unlocked)
+/// </summary>
+public class ActiveScheduleDto
+{
+    public int ScheduleID { get; set; }
+    public int DoorID { get; set; }
+    public string DoorName { get; set; } = string.Empty;
+    public string? ScheduleName { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public int MinutesRemaining { get; set; }
+}
+
+/// <summary>
+/// Response for active schedules endpoint
+/// </summary>
+public class ActiveSchedulesResponse
+{
+    public DateTime Timestamp { get; set; }
+    public int UnlockedDoorCount { get; set; }
+    public List<int> UnlockedDoorIds { get; set; } = new();
+    public List<ActiveScheduleDto> Schedules { get; set; } = new();
+}

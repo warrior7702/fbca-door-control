@@ -22,6 +22,52 @@ public class SchedulesController : ControllerBase
     }
 
     /// <summary>
+    /// Get currently active schedules (doors that should be unlocked RIGHT NOW).
+    /// GET /api/schedules/active
+    /// Returns all schedules where StartTime <= Now <= EndTime and IsActive = true
+    /// </summary>
+    [HttpGet("active")]
+    public async Task<ActionResult<ActiveSchedulesResponse>> GetActiveSchedules()
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+            
+            var activeSchedules = await _dbContext.UnlockSchedules
+                .Include(s => s.Door)
+                .Where(s => s.IsActive 
+                    && s.StartTime <= now 
+                    && s.EndTime >= now)
+                .OrderBy(s => s.Door.DoorName)
+                .ToListAsync();
+
+            var doorIds = activeSchedules.Select(s => s.DoorID).Distinct().ToList();
+            
+            return Ok(new ActiveSchedulesResponse
+            {
+                Timestamp = now,
+                UnlockedDoorCount = doorIds.Count,
+                UnlockedDoorIds = doorIds,
+                Schedules = activeSchedules.Select(s => new ActiveScheduleDto
+                {
+                    ScheduleID = s.ScheduleID,
+                    DoorID = s.DoorID,
+                    DoorName = s.Door?.DoorName ?? "Unknown",
+                    ScheduleName = s.ScheduleName,
+                    StartTime = DateTime.SpecifyKind(s.StartTime, DateTimeKind.Utc),
+                    EndTime = DateTime.SpecifyKind(s.EndTime, DateTimeKind.Utc),
+                    MinutesRemaining = (int)(s.EndTime - now).TotalMinutes
+                }).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving active schedules");
+            return StatusCode(500, new { error = "Failed to retrieve active schedules", details = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get list of unlock schedules with optional filtering.
     /// GET /api/schedules?doorId=5&isActive=true
     /// </summary>
@@ -202,6 +248,113 @@ public class SchedulesController : ControllerBase
         {
             _logger.LogError(ex, "Error creating schedule");
             return StatusCode(500, new { error = "Failed to create schedule", details = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create multiple schedules for a multi-door event.
+    /// POST /api/schedules/batch
+    /// Body: { "eventName": "Sunday Service", "defaultStartTime": "...", "defaultEndTime": "...", "doors": [...] }
+    /// </summary>
+    [HttpPost("batch")]
+    public async Task<ActionResult<BatchScheduleCreateResponse>> CreateBatchSchedules([FromBody] CreateBatchScheduleRequest request)
+    {
+        try
+        {
+            // Validation
+            if (request.Doors == null || request.Doors.Count == 0)
+            {
+                return BadRequest(new { error = "At least one door must be specified" });
+            }
+
+            if (request.DefaultEndTime <= request.DefaultStartTime)
+            {
+                return BadRequest(new { error = "Default end time must be after start time" });
+            }
+
+            var createdSchedules = new List<int>();
+            var errors = new List<string>();
+
+            // Process each door
+            foreach (var doorRequest in request.Doors)
+            {
+                try
+                {
+                    var door = await _dbContext.Doors.FindAsync(doorRequest.DoorId);
+                    if (door == null)
+                    {
+                        errors.Add($"Door {doorRequest.DoorId} not found");
+                        continue;
+                    }
+
+                    if (!door.IsActive)
+                    {
+                        errors.Add($"Door {doorRequest.DoorId} ({door.DoorName}) is not active");
+                        continue;
+                    }
+
+                    // Use custom times if provided, otherwise use defaults
+                    var startTime = doorRequest.CustomStartTime ?? request.DefaultStartTime;
+                    var endTime = doorRequest.CustomEndTime ?? request.DefaultEndTime;
+
+                    if (endTime <= startTime)
+                    {
+                        errors.Add($"Door {doorRequest.DoorId}: End time must be after start time");
+                        continue;
+                    }
+
+                    // Create schedule
+                    var schedule = new UnlockSchedule
+                    {
+                        DoorID = doorRequest.DoorId,
+                        ScheduleName = request.EventName,
+                        StartTime = startTime,
+                        EndTime = endTime,
+                        RecurrencePattern = request.RecurrencePattern ?? "NONE",
+                        RecurrenceEndDate = request.RecurrenceEndDate,
+                        Source = request.Source ?? "Multi-Door Event",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _dbContext.UnlockSchedules.Add(schedule);
+                    await _dbContext.SaveChangesAsync();
+
+                    createdSchedules.Add(schedule.ScheduleID);
+
+                    _logger.LogInformation(
+                        "Created schedule {ScheduleId} for door {DoorId} ({DoorName}): {StartTime} - {EndTime}",
+                        schedule.ScheduleID, door.DoorID, door.DoorName, schedule.StartTime, schedule.EndTime);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Door {doorRequest.DoorId}: {ex.Message}");
+                    _logger.LogError(ex, "Error creating schedule for door {DoorId}", doorRequest.DoorId);
+                }
+            }
+
+            if (createdSchedules.Count == 0)
+            {
+                return BadRequest(new 
+                { 
+                    error = "Failed to create any schedules", 
+                    details = errors 
+                });
+            }
+
+            return Ok(new BatchScheduleCreateResponse
+            {
+                Message = $"Created {createdSchedules.Count} schedule(s) for event '{request.EventName}'",
+                ScheduleIds = createdSchedules,
+                SuccessCount = createdSchedules.Count,
+                ErrorCount = errors.Count,
+                Errors = errors.Count > 0 ? errors : null
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating batch schedules");
+            return StatusCode(500, new { error = "Failed to create batch schedules", details = ex.Message });
         }
     }
 

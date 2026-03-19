@@ -57,10 +57,15 @@ public class QuickControlsService : IQuickControlsService
 
     public async Task<QuickControlsResponse> ExecuteActionAsync(int viaDeviceId, string action)
     {
-        // Ensure we're authenticated
+        // FIX: Always ensure fresh authentication before executing actions
+        // This prevents issues with expired MonitorCast sessions
         if (!await IsAuthenticatedAsync())
         {
             _logger.LogInformation("Session expired or not authenticated, re-authenticating...");
+            
+            // Clear any stale cookies before re-authenticating
+            ClearCookies();
+            
             if (!await AuthenticateAsync())
             {
                 return new QuickControlsResponse
@@ -114,46 +119,59 @@ public class QuickControlsService : IQuickControlsService
                 var response = await _httpClient.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                // FIX: Handle ANY non-success as potential session error, not just 401
+                // HTTP 306 (Unused) and other errors can occur when MonitorCast session expires
+                if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Received 401 Unauthorized, session expired, re-authenticating...");
-                    await AuthenticateAsync();
+                    _logger.LogWarning(
+                        "Quick Controls request failed: {StatusCode} ({ReasonPhrase}) - {Response}",
+                        response.StatusCode, response.ReasonPhrase, responseBody);
+
+                    // Clear auth state on ANY failure to force fresh authentication
+                    _lastAuthTime = null;
+                    ClearCookies();
+
+                    // On last attempt, return failure
+                    if (attempt >= RetryAttempts)
+                    {
+                        return new QuickControlsResponse
+                        {
+                            Success = false,
+                            StatusCode = (int)response.StatusCode,
+                            ResponseBody = responseBody,
+                            ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase}"
+                        };
+                    }
+
+                    // Re-authenticate and retry
+                    _logger.LogInformation("Re-authenticating before retry...");
+                    if (!await AuthenticateAsync())
+                    {
+                        _logger.LogError("Re-authentication failed, aborting retry");
+                        return new QuickControlsResponse
+                        {
+                            Success = false,
+                            StatusCode = (int)response.StatusCode,
+                            ResponseBody = responseBody,
+                            ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase} (re-auth failed)"
+                        };
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                     continue; // Retry with new session
                 }
 
-                if (response.IsSuccessStatusCode)
+                // Success!
+                _logger.LogInformation(
+                    "Successfully executed {Action} for door {DeviceId}",
+                    action, viaDeviceId);
+                
+                return new QuickControlsResponse
                 {
-                    _logger.LogInformation(
-                        "Successfully executed {Action} for door {DeviceId}",
-                        action, viaDeviceId);
-                    
-                    return new QuickControlsResponse
-                    {
-                        Success = true,
-                        StatusCode = (int)response.StatusCode,
-                        ResponseBody = responseBody
-                    };
-                }
-
-                _logger.LogWarning(
-                    "Quick Controls request failed: {StatusCode} - {Response}",
-                    response.StatusCode, responseBody);
-
-                // Wait before retry (except on last attempt)
-                if (attempt < RetryAttempts)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
-                }
-                else
-                {
-                    return new QuickControlsResponse
-                    {
-                        Success = false,
-                        StatusCode = (int)response.StatusCode,
-                        ResponseBody = responseBody,
-                        ErrorMessage = $"HTTP {response.StatusCode}: {response.ReasonPhrase}"
-                    };
-                }
+                    Success = true,
+                    StatusCode = (int)response.StatusCode,
+                    ResponseBody = responseBody
+                };
             }
             catch (Exception ex)
             {
@@ -240,5 +258,27 @@ public class QuickControlsService : IQuickControlsService
         }
 
         return Task.FromResult(false);
+    }
+
+    /// <summary>
+    /// Clear all cookies from the cookie container.
+    /// Used to ensure fresh authentication when session is suspected to be invalid.
+    /// </summary>
+    private void ClearCookies()
+    {
+        try
+        {
+            // Get all cookies and remove them
+            var cookies = _cookieContainer.GetCookies(new Uri(BaseUrl));
+            foreach (System.Net.Cookie cookie in cookies)
+            {
+                cookie.Expired = true;
+            }
+            _logger.LogDebug("Cleared cookie container");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to clear cookies");
+        }
     }
 }
