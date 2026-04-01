@@ -1,187 +1,101 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FBCADoorControl.Models
+namespace FBCADoorControl.Models;
+
+public class RecurrencePattern
 {
-    public class RecurrencePattern
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string EventName { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    [Required]
+    public TimeSpan UnlockTime { get; set; }
+
+    [Required]
+    public TimeSpan LockTime { get; set; }
+
+    [Required]
+    [MaxLength(20)]
+    public string RecurrenceType { get; set; } = string.Empty;
+
+    public int? DayOfWeek { get; set; }
+    public int? DayOfMonth { get; set; }
+    public int? WeekInterval { get; set; } = 1;
+
+    [Required]
+    public DateTime StartDate { get; set; }
+    
+    public DateTime? EndDate { get; set; }
+
+    [Required]
+    public int GenerateWeeksAhead { get; set; } = 4;
+
+    [Required]
+    public bool IsActive { get; set; } = true;
+
+    [Required]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [MaxLength(100)]
+    public string? CreatedBy { get; set; }
+
+    public DateTime? ModifiedAt { get; set; }
+
+    [MaxLength(100)]
+    public string? ModifiedBy { get; set; }
+
+    // Navigation properties
+    public ICollection<RecurrencePatternDoor> Doors { get; set; } = new List<RecurrencePatternDoor>();
+    public ICollection<RecurrenceInstance> Instances { get; set; } = new List<RecurrenceInstance>();
+
+    public DateTime? GetNextOccurrence(DateTime fromDate)
     {
-        [Key]
-        public int Id { get; set; }
+        if (EndDate.HasValue && fromDate > EndDate.Value)
+            return null;
 
-        [Required]
-        [MaxLength(200)]
-        public string EventName { get; set; } = string.Empty;
-
-        [MaxLength(500)]
-        public string? Description { get; set; }
-
-        [Required]
-        public TimeSpan UnlockTime { get; set; }
-
-        [Required]
-        public TimeSpan LockTime { get; set; }
-
-        [Required]
-        [MaxLength(20)]
-        public string RecurrenceType { get; set; } = "Weekly"; // Weekly, BiWeekly, Monthly
-
-        // For Weekly/BiWeekly: 0=Sunday, 1=Monday, ..., 6=Saturday
-        public int? DayOfWeek { get; set; }
-
-        // For Monthly: 1-31
-        public int? DayOfMonth { get; set; }
-
-        // For BiWeekly: 2, else 1
-        public int? WeekInterval { get; set; } = 1;
-
-        [Required]
-        public DateTime StartDate { get; set; }
-
-        public DateTime? EndDate { get; set; } // NULL = indefinite
-
-        public int GenerateWeeksAhead { get; set; } = 4;
-
-        public bool IsActive { get; set; } = true;
-
-        /// <summary>
-        /// Is this a special event? Special events get visual highlighting in the calendar.
-        /// </summary>
-        [Required]
-        public bool IsSpecialEvent { get; set; } = false;
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        [MaxLength(100)]
-        public string? CreatedBy { get; set; }
-
-        public DateTime? ModifiedAt { get; set; }
-
-        [MaxLength(100)]
-        public string? ModifiedBy { get; set; }
-
-        // Navigation properties
-        public virtual ICollection<RecurrencePatternDoor> Doors { get; set; } = new List<RecurrencePatternDoor>();
-        public virtual ICollection<RecurrenceInstance> Instances { get; set; } = new List<RecurrenceInstance>();
-
-        // Helper method to get next occurrence date
-        public DateTime? GetNextOccurrence(DateTime fromDate)
+        switch (RecurrenceType.ToLower())
         {
-            if (!IsActive || (EndDate.HasValue && fromDate > EndDate.Value))
-                return null;
+            case "daily":
+                var nextDaily = fromDate.Date >= StartDate.Date ? fromDate.Date : StartDate.Date;
+                return EndDate.HasValue && nextDaily > EndDate.Value ? null : nextDaily;
 
-            if (fromDate < StartDate)
-                fromDate = StartDate;
-
-            switch (RecurrenceType)
-            {
-                case "Weekly":
-                    return GetNextWeeklyOccurrence(fromDate, 1);
+            case "weekly":
+            case "biweekly":
+                if (!DayOfWeek.HasValue) return null;
                 
-                case "BiWeekly":
-                    return GetNextWeeklyOccurrence(fromDate, WeekInterval ?? 2);
+                var daysUntilNext = ((int)DayOfWeek.Value - (int)fromDate.DayOfWeek + 7) % 7;
+                if (daysUntilNext == 0 && fromDate.Date < StartDate.Date)
+                    daysUntilNext = 7;
                 
-                case "Monthly":
-                    return GetNextMonthlyOccurrence(fromDate);
+                var nextWeekly = fromDate.AddDays(daysUntilNext == 0 ? 7 : daysUntilNext);
+                if (nextWeekly < StartDate.Date) nextWeekly = StartDate.Date;
                 
-                default:
-                    return null;
-            }
-        }
+                return EndDate.HasValue && nextWeekly > EndDate.Value ? null : nextWeekly;
 
-        private DateTime? GetNextWeeklyOccurrence(DateTime fromDate, int weekInterval)
-        {
-            if (!DayOfWeek.HasValue) return null;
-
-            var targetDayOfWeek = (DayOfWeek)DayOfWeek.Value;
-            var daysUntilTarget = ((int)targetDayOfWeek - (int)fromDate.DayOfWeek + 7) % 7;
-            
-            if (daysUntilTarget == 0 && fromDate.Date > StartDate.Date)
-            {
-                // If same day but past start, go to next week
-                daysUntilTarget = 7 * weekInterval;
-            }
-
-            var nextDate = fromDate.Date.AddDays(daysUntilTarget);
-
-            // For BiWeekly, ensure we're on the correct week cycle
-            if (weekInterval > 1)
-            {
-                var weeksSinceStart = (nextDate - StartDate.Date).Days / 7;
-                if (weeksSinceStart % weekInterval != 0)
+            case "monthly":
+                if (!DayOfMonth.HasValue) return null;
+                
+                var nextMonth = fromDate.Day >= DayOfMonth.Value ? fromDate.AddMonths(1) : fromDate;
+                try
                 {
-                    nextDate = nextDate.AddDays(7 * (weekInterval - (weeksSinceStart % weekInterval)));
+                    var nextMonthly = new DateTime(nextMonth.Year, nextMonth.Month, DayOfMonth.Value);
+                    if (nextMonthly < StartDate.Date) nextMonthly = StartDate.Date;
+                    return EndDate.HasValue && nextMonthly > EndDate.Value ? null : nextMonthly;
                 }
-            }
+                catch
+                {
+                    return null;
+                }
 
-            return (EndDate.HasValue && nextDate > EndDate.Value) ? null : nextDate;
+            default:
+                return null;
         }
-
-        private DateTime? GetNextMonthlyOccurrence(DateTime fromDate)
-        {
-            if (!DayOfMonth.HasValue) return null;
-
-            var nextDate = new DateTime(fromDate.Year, fromDate.Month, Math.Min(DayOfMonth.Value, DateTime.DaysInMonth(fromDate.Year, fromDate.Month)));
-            
-            if (nextDate <= fromDate.Date)
-            {
-                // Move to next month
-                var nextMonth = fromDate.AddMonths(1);
-                nextDate = new DateTime(nextMonth.Year, nextMonth.Month, Math.Min(DayOfMonth.Value, DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month)));
-            }
-
-            return (EndDate.HasValue && nextDate > EndDate.Value) ? null : nextDate;
-        }
-    }
-
-    public class RecurrencePatternDoor
-    {
-        [Key]
-        public int Id { get; set; }
-
-        [Required]
-        public int RecurrencePatternId { get; set; }
-
-        [Required]
-        [Column("DoorID")]  // Match existing Doors table column name
-        public int DoorID { get; set; }
-
-        public TimeSpan? CustomUnlockTime { get; set; }
-        public TimeSpan? CustomLockTime { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        // Navigation properties
-        [ForeignKey("RecurrencePatternId")]
-        public virtual RecurrencePattern? RecurrencePattern { get; set; }
-
-        [ForeignKey("DoorID")]
-        public virtual Door? Door { get; set; }
-    }
-
-    public class RecurrenceInstance
-    {
-        [Key]
-        public int Id { get; set; }
-
-        [Required]
-        public int RecurrencePatternId { get; set; }
-
-        [Required]
-        [Column("ScheduleID")]  // Match existing UnlockSchedules table column name
-        public int ScheduleID { get; set; }
-
-        [Required]
-        public DateTime ScheduledDate { get; set; }
-
-        public DateTime GeneratedAt { get; set; } = DateTime.Now;
-
-        // Navigation properties
-        [ForeignKey("RecurrencePatternId")]
-        public virtual RecurrencePattern? RecurrencePattern { get; set; }
-
-        [ForeignKey("ScheduleID")]
-        public virtual UnlockSchedule? Schedule { get; set; }
     }
 }

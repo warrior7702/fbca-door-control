@@ -30,21 +30,14 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Get current user info - returns just first name
-    /// NOTE: Removed [Authorize] attribute to prevent auto-redirect on API calls
     /// </summary>
     [HttpGet("user")]
+    [Authorize]
     public IActionResult GetUser()
     {
         if (User.Identity?.IsAuthenticated != true)
         {
-            // Return 401 with login URL - don't redirect (CORS issues with AJAX)
-            Response.Headers.Add("WWW-Authenticate", "Bearer");
-            return Unauthorized(new
-            {
-                error = "Not authenticated",
-                loginUrl = "/api/auth/login",
-                isAuthenticated = false
-            });
+            return Unauthorized();
         }
 
         // Extract first name from email
@@ -72,9 +65,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             isAuthenticated = User.Identity?.IsAuthenticated ?? false,
-            name = ExtractFirstName(User.Identity?.Name),
-            loginUrl = "/api/auth/login",
-            logoutUrl = "/api/auth/logout"
+            name = ExtractFirstName(User.Identity?.Name)
         });
     }
 

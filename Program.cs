@@ -46,7 +46,7 @@ builder.Services.AddSingleton(sharedCookieContainer);
 
 builder.Services.AddScoped<IQuickControlsService, QuickControlsService>();
 builder.Services.AddScoped<IDoorSyncService, DoorSyncService>();
-builder.Services.AddScoped<RecurrenceService>();
+// RecurrenceService removed
 builder.Services.AddHttpClient<IQuickControlsService, QuickControlsService>()
     .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
     {

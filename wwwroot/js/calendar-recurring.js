@@ -3,13 +3,18 @@
 function showRecurringModal() {
     const modal = new bootstrap.Modal(document.getElementById('recurringModal'));
     
-    // Set default start date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('recurringStartDate').value = today;
+    // Set default start date to today (if field exists)
+    const startDateField = document.getElementById('recurringStartDate');
+    if (startDateField) {
+        const today = new Date().toISOString().split('T')[0];
+        startDateField.value = today;
+    }
     
     // Load doors into the container
     const container = document.getElementById('recurringDoorsContainer');
-    container.innerHTML = renderBuildingsForRecurring();
+    if (container) {
+        container.innerHTML = renderBuildingsForRecurring();
+    }
     
     modal.show();
 }
@@ -24,10 +29,10 @@ function updateRecurrenceOptions() {
 
 function renderBuildingsForRecurring() {
     const buildings = {
-        'wade': { name: 'Wade Building', emoji: '🏢', buildingKey: 'Wade' },
-        'mainChurch': { name: 'Main Church', emoji: '⛪', buildingKey: 'Main Church' },
-        'studentCenter': { name: 'Student Center', emoji: '🎓', buildingKey: 'Student Center' },
-        'pcb': { name: 'PCB', emoji: '👶', buildingKey: 'PCB' }
+        'wade': { name: 'Wade Building', emoji: '', buildingKey: 'Wade' },
+        'mainChurch': { name: 'Main Church', emoji: '', buildingKey: 'Main Church' },
+        'studentCenter': { name: 'Student Center', emoji: '', buildingKey: 'Student Center' },
+        'pcb': { name: 'PCB', emoji: '', buildingKey: 'PCB' }
     };
 
     let html = '';
@@ -130,7 +135,7 @@ async function createRecurringPattern() {
     let payload = {
         eventName: patternName,
         recurrenceType: recurrenceType,
-        isSpecialEvent: eventType === 'special',
+        eventType: eventType === 'weekly' ? 'Weekly' : 'Special',  // Set event type for filtering
         unlockTime: startDateTime.toISOString(),
         lockTime: endDateTime.toISOString(),
         startDate: startDate,

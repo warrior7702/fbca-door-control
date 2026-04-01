@@ -6,108 +6,12 @@ let allDoors = [];
 let allSchedules = [];
 let currentSelectedEvent = null;
 let doorsByBuilding = {};
-let eventFilter = 'all'; // Filter state: 'all', 'special', 'weekly'
-let doorSearchTerm = ''; // Live search filter
-let buildingFilter = ''; // Building filter
-let activeScheduleIds = new Set(); // Currently active schedule IDs
-let activeScheduleData = {}; // Map of scheduleID -> { minutesRemaining, endTime }
 
 // Helper: Clean up recurring event names (remove "2a ", "3b ", etc.)
 function cleanEventName(eventName, isRecurring) {
     if (!isRecurring || !eventName) return eventName;
     // Remove leading instance numbers like "2a ", "3b ", etc.
     return eventName.replace(/^\d+[a-z]?\s+/i, '');
-}
-
-// Three-way event filter
-function changeEventFilter() {
-    const dropdown = document.getElementById('eventFilterDropdown');
-    if (dropdown) {
-        eventFilter = dropdown.value;
-    }
-    
-    // Re-render calendar with filter applied
-    renderCalendarEvents();
-}
-
-// Handle door search with autocomplete
-function handleDoorSearch() {
-    const searchInput = document.getElementById('doorSearch');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    const autocompleteDiv = document.getElementById('doorAutocomplete');
-    
-    if (!searchTerm || searchTerm.length < 2) {
-        // Hide autocomplete if search is empty or too short
-        if (autocompleteDiv) autocompleteDiv.style.display = 'none';
-        doorSearchTerm = '';
-        renderCalendarEvents();
-        return;
-    }
-    
-    // Find matching doors
-    const matchingDoors = allDoors.filter(door => 
-        door.doorName.toLowerCase().includes(searchTerm)
-    ).slice(0, 10); // Limit to 10 results
-    
-    if (matchingDoors.length > 0 && autocompleteDiv) {
-        // Show autocomplete dropdown
-        autocompleteDiv.innerHTML = matchingDoors.map(door => {
-            const building = extractBuilding(door.controllerName, door.doorName);
-            return `
-                <div onclick="selectDoor('${door.doorName.replace(/'/g, "\\'")}')" 
-                     style="padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff;"
-                     onmouseover="this.style.background='rgba(255,255,255,0.1)'"
-                     onmouseout="this.style.background='transparent'">
-                    <div style="font-weight: 600;">${door.doorName}</div>
-                    <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">${building}</div>
-                </div>
-            `;
-        }).join('');
-        autocompleteDiv.style.display = 'block';
-    } else if (autocompleteDiv) {
-        autocompleteDiv.style.display = 'none';
-    }
-    
-    // Apply filter
-    doorSearchTerm = searchTerm;
-    renderCalendarEvents();
-}
-
-// Select door from autocomplete
-function selectDoor(doorName) {
-    const searchInput = document.getElementById('doorSearch');
-    const autocompleteDiv = document.getElementById('doorAutocomplete');
-    
-    if (searchInput) searchInput.value = doorName;
-    if (autocompleteDiv) autocompleteDiv.style.display = 'none';
-    
-    doorSearchTerm = doorName.toLowerCase();
-    renderCalendarEvents();
-}
-
-// Filter by building dropdown
-function filterCalendarByBuilding() {
-    const buildingSelect = document.getElementById('buildingFilter');
-    buildingFilter = buildingSelect ? buildingSelect.value : '';
-    renderCalendarEvents();
-}
-
-// Clear all filters
-function clearAllFilters() {
-    const searchInput = document.getElementById('doorSearch');
-    const buildingSelect = document.getElementById('buildingFilter');
-    const eventFilterDropdown = document.getElementById('eventFilterDropdown');
-    const autocompleteDiv = document.getElementById('doorAutocomplete');
-    
-    if (searchInput) searchInput.value = '';
-    if (buildingSelect) buildingSelect.value = '';
-    if (eventFilterDropdown) eventFilterDropdown.value = 'all';
-    if (autocompleteDiv) autocompleteDiv.style.display = 'none';
-    
-    doorSearchTerm = '';
-    buildingFilter = '';
-    eventFilter = 'all';
-    renderCalendarEvents();
 }
 
 // Initialize on page load
@@ -118,25 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
     checkHealth();
     loadUserName();
     
-    // Close autocomplete when clicking outside
-    document.addEventListener('click', function(e) {
-        const searchInput = document.getElementById('doorSearch');
-        const autocompleteDiv = document.getElementById('doorAutocomplete');
-        if (autocompleteDiv && searchInput && !searchInput.contains(e.target) && !autocompleteDiv.contains(e.target)) {
-            autocompleteDiv.style.display = 'none';
-        }
-    });
-    
     // Refresh every 30 seconds
     setInterval(() => {
         loadSchedules();
-        pollActiveSchedules(); // Check active status
         updateStats();
-        checkHealth(); // Update status indicator
     }, 30000);
-    
-    // Initial active status check
-    pollActiveSchedules();
 });
 
 // Initialize FullCalendar
@@ -172,25 +62,6 @@ function initializeCalendar() {
             const props = arg.event.extendedProps;
             const doorCount = props.doorCount || 1;
             const status = props.status || 'Pending';
-            const schedules = props.schedules || [];
-            
-            // Check if any schedule in this event is currently active
-            const activeSchedule = schedules.find(s => activeScheduleIds.has(s.scheduleId));
-            const isActive = !!activeSchedule;
-            const minutesRemaining = isActive && activeSchedule ? (activeScheduleData[activeSchedule.scheduleId]?.minutesRemaining || 0) : 0;
-            
-            // Status indicator dot (colored circle on left)
-            const statusColors = {
-                'Pending': '#3b82f6',      // Blue
-                'Executing': '#f59e0b',    // Orange
-                'Executed': '#10b981',     // Green
-                'Failed': '#ef4444',       // Red
-                'Cancelled': '#6b7280'     // Gray
-            };
-            
-            // Active events get pulsing green dot, otherwise normal status color
-            const dotColor = isActive ? '#10b981' : (statusColors[status] || statusColors['Pending']);
-            const pulseAnimation = isActive ? 'animation: pulse 2s infinite;' : '';
             
             // Build tooltip
             const startTime = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
@@ -202,21 +73,12 @@ function initializeCalendar() {
                 return door ? door.doorName : `Door ${s.doorId}`;
             }).join(', ') : '';
             
-            const activeStatus = isActive ? `\n🟢 ACTIVE NOW (${minutesRemaining}m remaining)` : '';
-            const tooltip = `${arg.event.title}\nTime: ${timeRange}\nDoors: ${doorCount}\nStatus: ${status}${activeStatus}\n${doorNames}`;
-
-            // Build status badge
-            const statusText = status === 'Executing' ? 'Running' : status;
-            const statusBadge = `<span class="event-status-badge" style="color: ${dotColor}; margin-left: 6px; font-weight: 500;">(${statusText})</span>`;
-            
-            // Build active badge (only show if active)
-            const activeBadge = isActive ? `<span class="active-badge" style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 4px; white-space: nowrap;">${minutesRemaining}m left</span>` : '';
+            const tooltip = `${arg.event.title}\nTime: ${timeRange}\nDoors: ${doorCount}\nStatus: ${status}\n${doorNames}`;
             
             return {
                 html: `<div class="fc-event-main-frame" title="${tooltip}">
                     <div class="fc-event-title-container">
-                        <span class="event-status-dot" style="background-color: ${dotColor}; ${pulseAnimation}"></span>
-                        <div class="fc-event-title fc-sticky">${arg.event.title}${statusBadge}${activeBadge}</div>
+                        <div class="fc-event-title fc-sticky">${arg.event.title}</div>
                     </div>
                 </div>`
             };
@@ -280,21 +142,16 @@ async function loadUserName() {
         
         const data = await response.json();
         const userNameEl = document.getElementById('userName');
-        
-        // Check if user is not authenticated (returns "User")
-        if (!data.givenName || data.givenName === 'User') {
-            // Redirect to index.html (sign-in page)
-            window.location.href = '/index.html';
-            return;
-        }
-        
-        if (userNameEl) {
+        if (userNameEl && data.givenName) {
             userNameEl.textContent = data.givenName;
         }
     } catch (error) {
         console.error('Error loading user name:', error);
-        // On error, redirect to sign-in
-        window.location.href = '/index.html';
+        // Silently fail - not critical
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl) {
+            userNameEl.textContent = 'User';
+        }
     }
 }
 
@@ -308,26 +165,19 @@ async function loadSchedules() {
         const schedules = data.schedules || data; // Handle both {schedules: [...]} and [...] formats
         
         // Normalize property names (API returns scheduleID, doorID with capital ID)
-        allSchedules = schedules.map(schedule => {
-            // Keep "Z" suffix - database times ARE actually UTC, FullCalendar will convert to local
-            let unlockTime = schedule.startTime || schedule.unlockTime;
-            let lockTime = schedule.endTime || schedule.lockTime;
-            
-            return {
-                ...schedule,
-                scheduleId: schedule.scheduleID || schedule.scheduleId,
-                doorId: schedule.doorID || schedule.doorId,
-                unlockTime: unlockTime,
-                lockTime: lockTime,
-                eventName: schedule.ScheduleName || schedule.scheduleName || schedule.eventName,
-                status: schedule.status || schedule.Status || 'Pending',
-                notes: schedule.notes || schedule.Notes || '',
-                isRecurring: schedule.isRecurring || schedule.IsRecurring || false,  // Track if auto-generated from pattern
-                eventType: schedule.eventType || schedule.EventType || 'Special',  // Weekly or Special
-                createdAt: schedule.createdAt,
-                lastModified: schedule.lastModified || schedule.updatedAt
-            };
-        });
+        allSchedules = schedules.map(schedule => ({
+            ...schedule,
+            scheduleId: schedule.scheduleID || schedule.scheduleId,
+            doorId: schedule.doorID || schedule.doorId,
+            unlockTime: (schedule.startTime || schedule.unlockTime).replace('Z', ''),
+            lockTime: (schedule.endTime || schedule.lockTime).replace('Z', ''),
+            eventName: schedule.ScheduleName || schedule.scheduleName || schedule.eventName,
+            status: schedule.status || schedule.Status || 'Pending',
+            notes: schedule.notes || schedule.Notes || '',
+            isRecurring: schedule.isRecurring || schedule.IsRecurring || false,  // Track if auto-generated from pattern
+            createdAt: schedule.createdAt,
+            lastModified: schedule.lastModified || schedule.updatedAt
+        }));
         
         renderCalendarEvents();
         updateStats();
@@ -335,37 +185,6 @@ async function loadSchedules() {
     } catch (error) {
         console.error('Error loading schedules:', error);
         showError('Failed to load schedules: ' + error.message);
-    }
-}
-
-// Poll active schedules (currently unlocking doors)
-async function pollActiveSchedules() {
-    try {
-        const response = await fetch(`${API_BASE}/schedules/active`);
-        if (!response.ok) {
-            console.warn('Failed to fetch active schedules');
-            return;
-        }
-        
-        const data = await response.json();
-        const schedules = data.schedules || [];
-        
-        // Update active schedule tracking
-        activeScheduleIds = new Set(schedules.map(s => s.scheduleID));
-        activeScheduleData = {};
-        
-        schedules.forEach(s => {
-            activeScheduleData[s.scheduleID] = {
-                minutesRemaining: s.minutesRemaining || 0,
-                endTime: s.endTime
-            };
-        });
-        
-        // Re-render calendar events to show active status
-        renderCalendarEvents();
-        
-    } catch (error) {
-        console.error('Error polling active schedules:', error);
     }
 }
 
@@ -405,43 +224,7 @@ function renderCalendarEvents() {
     });
     
     // Convert event groups to FullCalendar events
-    const events = Object.values(eventGroups)
-        .filter(group => {
-            // Apply three-way filter based on EventType field
-            const eventType = group.schedules[0]?.eventType || 'Special';
-            
-            if (eventFilter === 'special') {
-                if (eventType !== 'Special') return false;
-            } else if (eventFilter === 'weekly') {
-                if (eventType !== 'Weekly') return false;
-            }
-            
-            // Apply door search filter
-            if (doorSearchTerm) {
-                const doorNames = group.schedules.map(s => {
-                    const door = allDoors.find(d => d.doorId === s.doorId);
-                    return door ? door.doorName.toLowerCase() : '';
-                });
-                if (!doorNames.some(name => name.includes(doorSearchTerm))) {
-                    return false;
-                }
-            }
-            
-            // Apply building filter
-            if (buildingFilter) {
-                const buildings = group.schedules.map(s => {
-                    const door = allDoors.find(d => d.doorId === s.doorId);
-                    if (!door) return '';
-                    return extractBuilding(door.controllerName, door.doorName);
-                });
-                if (!buildings.includes(buildingFilter)) {
-                    return false;
-                }
-            }
-            
-            return true;
-        })
-        .map(group => {
+    const events = Object.values(eventGroups).map(group => {
         const doorCount = group.schedules.length;
         const doorList = group.schedules
             .map(s => {
@@ -456,10 +239,6 @@ function renderCalendarEvents() {
         // Clean up event name (remove instance numbers like "2a " for recurring events)
         const cleanedEventName = cleanEventName(group.eventName, isRecurring);
         
-        // Database times are UTC - keep "Z" so FullCalendar converts to local
-        let startTime = group.unlockTime;
-        let endTime = group.lockTime;
-        
         // Determine event color based on status
         let color = '#0d6efd'; // pending = blue
         if (group.status === 'Executed') color = '#198754'; // green
@@ -468,9 +247,9 @@ function renderCalendarEvents() {
         
         return {
             id: `event_${group.eventName}_${group.unlockTime}`,
-            title: cleanedEventName, // NO DOOR COUNT - removed (X doors) suffix
-            start: startTime,
-            end: endTime,
+            title: doorCount > 1 ? `${cleanedEventName} (${doorCount} doors)` : cleanedEventName,
+            start: group.unlockTime,
+            end: group.lockTime,
             backgroundColor: color,
             borderColor: color,
             extendedProps: {
@@ -518,8 +297,14 @@ function extractBuilding(controllerName, doorName = '') {
     return controllerName.split(':')[1]?.trim() || controllerName;
 }
 
-// Populate door dropdowns with building grouping (sidebar removed, only build doorsByBuilding)
+// Populate door dropdowns with building grouping
 function populateDoorDropdowns() {
+    // Clear all building filter dropdowns
+    document.getElementById('doorFilterWade').innerHTML = '<option value="">Select door...</option>';
+    document.getElementById('doorFilterMainChurch').innerHTML = '<option value="">Select door...</option>';
+    document.getElementById('doorFilterStudentCenter').innerHTML = '<option value="">Select door...</option>';
+    document.getElementById('doorFilterPCB').innerHTML = '<option value="">Select door...</option>';
+    
     // Group doors by building (store globally for create modal)
     doorsByBuilding = {
         'Wade': [],
@@ -540,7 +325,11 @@ function populateDoorDropdowns() {
         doorsByBuilding[building].sort((a, b) => a.doorName.localeCompare(b.doorName));
     });
     
-    // Sidebar filter dropdowns removed - doorsByBuilding is still used by create modals
+    // Populate individual building filter dropdowns
+    populateBuildingDropdown('doorFilterWade', doorsByBuilding['Wade']);
+    populateBuildingDropdown('doorFilterMainChurch', doorsByBuilding['Main Church']);
+    populateBuildingDropdown('doorFilterStudentCenter', doorsByBuilding['Student Center']);
+    populateBuildingDropdown('doorFilterPCB', doorsByBuilding['PCB']);
 }
 
 // Update door list in create modal based on selected building
@@ -695,7 +484,6 @@ async function createSchedule() {
     const unlockTime = document.getElementById('createUnlockTime').value;
     const lockTime = document.getElementById('createLockTime').value;
     const eventName = document.getElementById('createEventName').value;
-    const eventType = document.getElementById('createEventType').value;
     const notes = document.getElementById('createNotes').value;
     
     // Validation
@@ -719,7 +507,6 @@ async function createSchedule() {
         startTime: new Date(unlockTime).toISOString(),
         endTime: new Date(lockTime).toISOString(),
         scheduleName: eventName || null,
-        eventType: eventType === 'weekly' ? 'Weekly' : 'Special', // Set event type for filtering
         source: "Manual"
     };
     
@@ -762,12 +549,6 @@ function showEventDetails(event) {
     const startTime = new Date(event.start);
     const endTime = event.end ? new Date(event.end) : null;
     
-    // Check if any schedule in this event is currently active
-    const schedules = props.schedules || [];
-    const activeSchedule = schedules.find(s => activeScheduleIds.has(s.scheduleId));
-    const isActive = !!activeSchedule;
-    const minutesRemaining = isActive && activeSchedule ? (activeScheduleData[activeSchedule.scheduleId]?.minutesRemaining || 0) : 0;
-    
     // Build door list HTML
     let doorListHTML = '';
     if (props.schedules && props.schedules.length > 0) {
@@ -776,13 +557,10 @@ function showEventDetails(event) {
             const door = allDoors.find(d => d.doorId === schedule.doorId);
             const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
             const scheduleStatus = schedule.status || 'Pending';
-            const scheduleIsActive = activeScheduleIds.has(schedule.scheduleId);
-            const activeBadge = scheduleIsActive ? `<span class="badge" style="background: #10b981; color: white; margin-left: 8px;">ACTIVE (${activeScheduleData[schedule.scheduleId]?.minutesRemaining || 0}m left)</span>` : '';
             doorListHTML += `
                 <div class="event-door-item">
                     <span class="event-door-name">${doorName}</span>
                     <span class="badge status-badge-${scheduleStatus.toLowerCase()}">${scheduleStatus}</span>
-                    ${activeBadge}
                 </div>
             `;
         });
@@ -794,15 +572,6 @@ function showEventDetails(event) {
     const displayEventName = cleanEventName(props.eventName, isRecurring);
     
     const content = `
-        ${isActive ? `
-        <div class="alert" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 24px;">🟢</span>
-            <div>
-                <div style="font-weight: 600; color: #10b981;">CURRENTLY ACTIVE</div>
-                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">Doors are unlocked — ${minutesRemaining} minutes remaining</div>
-            </div>
-        </div>
-        ` : ''}
         <div class="event-detail-row">
             <span class="event-detail-label">Event Name:</span>
             <span class="event-detail-value">${displayEventName}</span>
@@ -836,12 +605,6 @@ function showEventDetails(event) {
     `;
     
     document.getElementById('eventDetailsContent').innerHTML = content;
-    
-    // Show/hide "Skip This Day" button based on whether event is recurring
-    const skipBtn = document.getElementById('skipThisDayBtn');
-    if (skipBtn) {
-        skipBtn.style.display = isRecurring ? 'inline-flex' : 'none';
-    }
     
     const modal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
     modal.show();
@@ -890,57 +653,6 @@ async function deleteSchedule() {
     }
 }
 
-// Skip this day for recurring event (deactivate schedules for this specific date only)
-async function skipThisDay() {
-    if (!currentSelectedEvent) return;
-    
-    const props = currentSelectedEvent.extendedProps;
-    const eventDate = currentSelectedEvent.start;
-    const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    
-    const doorCount = props.schedules ? props.schedules.length : 0;
-    const confirmMsg = `Skip "${props.eventName}" on ${formattedDate}?\n\nThis will deactivate ${doorCount} door schedule(s) for this date only.\nFuture occurrences will continue as normal.`;
-    
-    if (!confirm(confirmMsg)) {
-        return;
-    }
-    
-    try {
-        // Deactivate all schedules for this specific date
-        const schedules = props.schedules || [];
-        const updatePromises = schedules.map(schedule =>
-            fetch(`${API_BASE}/schedules/${schedule.scheduleId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...schedule,
-                    isActive: false
-                })
-            })
-        );
-        
-        const responses = await Promise.all(updatePromises);
-        
-        // Check if any failed
-        const failed = responses.filter(r => !r.ok);
-        if (failed.length > 0) {
-            throw new Error(`Failed to skip ${failed.length} schedule(s)`);
-        }
-        
-        // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal')).hide();
-        
-        // Reload schedules
-        await loadSchedules();
-        
-        showSuccess(`Skipped "${props.eventName}" on ${formattedDate}. Future occurrences are still active.`);
-        
-    } catch (error) {
-        console.error('Error skipping day:', error);
-        showError('Failed to skip this day: ' + error.message);
-    }
-}
-
 // Sync doors from VIA database
 async function syncDoors() {
     const spinner = document.getElementById('syncSpinner');
@@ -961,6 +673,9 @@ async function syncDoors() {
         await loadDoors();
         
         showSuccess(`Doors synced! Added: ${result.doorsAdded}, Updated: ${result.doorsUpdated}`);
+        
+        // Update last sync time
+        document.getElementById('statLastSync').textContent = formatDateTime(new Date());
         
     } catch (error) {
         console.error('Error syncing doors:', error);
@@ -1053,15 +768,6 @@ function filterDoors(building) {
             const isRecurring = group.schedules.some(s => s.isRecurring === true);
             const cleanedEventName = cleanEventName(group.eventName, isRecurring);
             
-            // FIX TIMEZONE: Strip Z for recurring events, keep Z for regular events
-            let startTime = group.unlockTime;
-            let endTime = group.lockTime;
-            
-            if (isRecurring) {
-                startTime = startTime.replace(/Z$/, '');
-                endTime = endTime.replace(/Z$/, '');
-            }
-            
             let color = '#0d6efd';
             if (group.status === 'Executed') color = '#198754';
             if (group.status === 'Failed') color = '#dc3545';
@@ -1069,9 +775,9 @@ function filterDoors(building) {
             
             return {
                 id: `event_${group.eventName}_${group.unlockTime}`,
-                title: cleanedEventName, // NO DOOR COUNT
-                start: startTime,
-                end: endTime,
+                title: doorCount > 1 ? `${cleanedEventName} (${doorCount} doors)` : cleanedEventName,
+                start: group.unlockTime,
+                end: group.lockTime,
                 backgroundColor: color,
                 borderColor: color,
                 extendedProps: {
@@ -1089,57 +795,35 @@ function filterDoors(building) {
     }
 }
 
-// Check system health and update status indicator
+// Check system health
 async function checkHealth() {
     try {
         const response = await fetch(`${API_BASE}/health`);
-        
-        if (!response.ok) {
-            console.error('Health check failed:', response.status, response.statusText);
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
         const health = await response.json();
-        console.log('Health check result:', health);
         
-        const indicator = document.getElementById('statusIndicator');
-        if (!indicator) {
-            console.warn('Status indicator element not found');
-            return;
-        }
+        const statusEl = document.getElementById('healthStatus');
         
         if (health.status === 'Healthy') {
-            // Green - All systems operational
-            indicator.style.background = '#28a745';
-            indicator.style.boxShadow = '0 0 8px #28a745';
-            indicator.title = 'System Healthy';
-        } else if (health.status === 'Degraded') {
-            // Yellow - Partial issues
-            indicator.style.background = '#ffc107';
-            indicator.style.boxShadow = '0 0 8px #ffc107';
-            indicator.title = 'System Degraded';
+            statusEl.innerHTML = '<span class="health-ok">✅ All Systems Operational</span>';
         } else {
-            // Red - System issues
-            indicator.style.background = '#dc3545';
-            indicator.style.boxShadow = '0 0 8px #dc3545';
-            indicator.title = 'System Unhealthy';
+            statusEl.innerHTML = `<span class="health-error">⚠️ ${health.status}</span>`;
         }
+        
     } catch (error) {
-        console.error('Health check error:', error);
-        // Gray - Cannot reach health endpoint
-        const indicator = document.getElementById('statusIndicator');
-        if (indicator) {
-            indicator.style.background = '#6c757d';
-            indicator.style.boxShadow = '0 0 8px #6c757d';
-            indicator.title = 'Status Unknown: ' + error.message;
-        }
+        console.error('Error checking health:', error);
+        document.getElementById('healthStatus').innerHTML = 
+            '<span class="health-error">❌ Health Check Failed</span>';
     }
 }
 
-// Update statistics (sidebar removed, keeping function for compatibility)
+// Update statistics
 function updateStats() {
-    // Sidebar elements removed - no-op function
-    return;
+    document.getElementById('statTotalDoors').textContent = allDoors.length;
+    
+    const activeSchedules = allSchedules.filter(s => 
+        s.status === 'Pending' && new Date(s.lockTime) > new Date()
+    );
+    document.getElementById('statActiveSchedules').textContent = activeSchedules.length;
 }
 
 // Show success toast
@@ -1394,7 +1078,6 @@ async function createMultiDoorEvent() {
         }
         
         const eventName = document.getElementById('multiEventName').value.trim();
-        const eventType = document.getElementById('multiEventType').value;
         const defaultUnlock = document.getElementById('multiDefaultUnlockTime').value;
         const defaultLock = document.getElementById('multiDefaultLockTime').value;
         
@@ -1435,7 +1118,6 @@ async function createMultiDoorEvent() {
             eventName: eventName,
             defaultStartTime: new Date(defaultUnlock).toISOString(),
             defaultEndTime: new Date(defaultLock).toISOString(),
-            eventType: eventType === 'weekly' ? 'Weekly' : 'Special', // Set event type for filtering
             doors: doorRequests,
             source: 'Multi-Door Event'
         };

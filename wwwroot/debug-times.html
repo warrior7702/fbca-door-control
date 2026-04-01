@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug API Times</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .event { margin: 10px 0; padding: 15px; border: 2px solid #333; background: white; }
+        .recurring { border-color: #f59e0b; }
+        .regular { border-color: #3b82f6; }
+        h3 { margin: 5px 0; }
+        code { background: #ffe; padding: 2px 5px; }
+        .label { font-weight: bold; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🔍 API Time Debug Tool</h1>
+    <button onclick="loadSchedules()" style="padding: 10px 20px; font-size: 16px;">Load Schedules from API</button>
+    <div id="output"></div>
+    
+    <script>
+        async function loadSchedules() {
+            const response = await fetch('/api/schedules');
+            const data = await response.json();
+            const schedules = data.schedules || data;
+            
+            // Find one recurring and one regular event
+            const recurring = schedules.find(s => s.isRecurring || s.IsRecurring);
+            const regular = schedules.find(s => !(s.isRecurring || s.IsRecurring));
+            
+            let html = '<h2>Raw API Data:</h2>';
+            
+            if (recurring) {
+                html += `
+                    <div class="event recurring">
+                        <h3>RECURRING EVENT: ${recurring.ScheduleName || recurring.scheduleName}</h3>
+                        <div><span class="label">StartTime:</span> <code>${recurring.startTime || recurring.StartTime}</code></div>
+                        <div><span class="label">EndTime:</span> <code>${recurring.endTime || recurring.EndTime}</code></div>
+                        <div><span class="label">Has 'Z'?</span> ${(recurring.startTime || recurring.StartTime || '').includes('Z') ? 'YES' : 'NO'}</div>
+                        <div><span class="label">Full JSON:</span><br><pre>${JSON.stringify(recurring, null, 2)}</pre></div>
+                    </div>
+                `;
+            }
+            
+            if (regular) {
+                html += `
+                    <div class="event regular">
+                        <h3>REGULAR EVENT: ${regular.ScheduleName || regular.scheduleName}</h3>
+                        <div><span class="label">StartTime:</span> <code>${regular.startTime || regular.StartTime}</code></div>
+                        <div><span class="label">EndTime:</span> <code>${regular.endTime || regular.EndTime}</code></div>
+                        <div><span class="label">Has 'Z'?</span> ${(regular.startTime || regular.StartTime || '').includes('Z') ? 'YES' : 'NO'}</div>
+                        <div><span class="label">Full JSON:</span><br><pre>${JSON.stringify(regular, null, 2)}</pre></div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('output').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

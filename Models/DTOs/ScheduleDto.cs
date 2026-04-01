@@ -12,6 +12,9 @@ public class ScheduleDto
     public DateTime? RecurrenceEndDate { get; set; }
     public string Source { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+    public bool IsRecurring { get; set; }
+    public string EventType { get; set; } = "Special";
+    public string Status { get; set; } = "Pending";
     public DateTime CreatedAt { get; set; }
 }
 
@@ -88,4 +91,27 @@ public class ActiveSchedulesResponse
     public int UnlockedDoorCount { get; set; }
     public List<int> UnlockedDoorIds { get; set; } = new();
     public List<ActiveScheduleDto> Schedules { get; set; } = new();
+}
+
+/// <summary>
+/// DTO for an upcoming schedule (next event for a door)
+/// </summary>
+public class UpcomingScheduleDto
+{
+    public int ScheduleID { get; set; }
+    public int DoorID { get; set; }
+    public string DoorName { get; set; } = string.Empty;
+    public string? ScheduleName { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public int MinutesUntil { get; set; }
+}
+
+/// <summary>
+/// Response for upcoming schedules endpoint
+/// </summary>
+public class UpcomingSchedulesResponse
+{
+    public DateTime Timestamp { get; set; }
+    public List<UpcomingScheduleDto> Schedules { get; set; } = new();
 }

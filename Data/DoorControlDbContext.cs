@@ -20,6 +20,7 @@ public class DoorControlDbContext : DbContext
     public DbSet<RecurrencePattern> RecurrencePatterns { get; set; } = null!;
     public DbSet<RecurrencePatternDoor> RecurrencePatternDoors { get; set; } = null!;
     public DbSet<RecurrenceInstance> RecurrenceInstances { get; set; } = null!;
+    public DbSet<DoorCamera> DoorCameras { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

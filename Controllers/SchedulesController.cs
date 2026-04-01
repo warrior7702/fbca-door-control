@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FBCADoorControl.Data;
@@ -68,6 +69,54 @@ public class SchedulesController : ControllerBase
     }
 
     /// <summary>
+    /// Get upcoming schedules for all doors (next event per door).
+    /// GET /api/schedules/upcoming
+    /// Returns the next scheduled event for each door that has future schedules.
+    /// </summary>
+    [HttpGet("upcoming")]
+    public async Task<ActionResult<UpcomingSchedulesResponse>> GetUpcomingSchedules()
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+            
+            // Get all active schedules that start in the future
+            var upcomingSchedules = await _dbContext.UnlockSchedules
+                .Include(s => s.Door)
+                .Where(s => s.IsActive && s.StartTime > now)
+                .OrderBy(s => s.DoorID)
+                .ThenBy(s => s.StartTime)
+                .ToListAsync();
+
+            // Group by door and take the earliest (next) schedule for each
+            var nextSchedulePerDoor = upcomingSchedules
+                .GroupBy(s => s.DoorID)
+                .Select(g => g.First())
+                .ToList();
+            
+            return Ok(new UpcomingSchedulesResponse
+            {
+                Timestamp = now,
+                Schedules = nextSchedulePerDoor.Select(s => new UpcomingScheduleDto
+                {
+                    ScheduleID = s.ScheduleID,
+                    DoorID = s.DoorID,
+                    DoorName = s.Door?.DoorName ?? "Unknown",
+                    ScheduleName = s.ScheduleName,
+                    StartTime = DateTime.SpecifyKind(s.StartTime, DateTimeKind.Utc),
+                    EndTime = DateTime.SpecifyKind(s.EndTime, DateTimeKind.Utc),
+                    MinutesUntil = (int)(s.StartTime - now).TotalMinutes
+                }).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving upcoming schedules");
+            return StatusCode(500, new { error = "Failed to retrieve upcoming schedules", details = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get list of unlock schedules with optional filtering.
     /// GET /api/schedules?doorId=5&isActive=true
     /// </summary>
@@ -129,6 +178,9 @@ public class SchedulesController : ControllerBase
                     : null,
                 Source = s.Source,
                 IsActive = s.IsActive,
+                IsRecurring = s.IsRecurring,
+                EventType = s.EventType,
+                Status = s.Status,
                 CreatedAt = DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc)
             }).ToList();
 
@@ -177,6 +229,9 @@ public class SchedulesController : ControllerBase
                     : null,
                 Source = schedule.Source,
                 IsActive = schedule.IsActive,
+                IsRecurring = schedule.IsRecurring,
+                EventType = schedule.EventType,
+                Status = schedule.Status,
                 CreatedAt = DateTime.SpecifyKind(schedule.CreatedAt, DateTimeKind.Utc)
             });
         }

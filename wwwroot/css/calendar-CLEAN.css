@@ -16,22 +16,22 @@
     --fbca-light-gray: #DDE5FD;
     --fbca-gray: #BBBDC7;
     
-    /* Primary Gradients - Dark theme matching status page */
-    --primary-gradient-start: #1B365F;
-    --primary-gradient-end: #004da8;
-    --accent-gradient-start: #004da8;
-    --accent-gradient-end: #75D3F2;
+    /* Primary Gradients - Lighter & Brighter! */
+    --primary-gradient-start: #e0f2fe;
+    --primary-gradient-end: #75D3F2;
+    --accent-gradient-start: #75D3F2;
+    --accent-gradient-end: #004da8;
     --success-gradient-start: #11998e;
     --success-gradient-end: #38ef7d;
     --danger-gradient-start: #eb3349;
     --danger-gradient-end: #f45c43;
     
     /* Neutral Colors */
-    --bg-primary: #0a1628;
-    --bg-secondary: #1a2640;
-    --text-primary: rgba(255, 255, 255, 0.95);
-    --text-secondary: rgba(255, 255, 255, 0.75);
-    --text-muted: rgba(255, 255, 255, 0.5);
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --text-primary: #2d3748;
+    --text-secondary: #718096;
+    --text-muted: #BBBDC7;
     
     /* Event Colors */
     --event-special: #004da8;
@@ -143,29 +143,6 @@ body {
     display: flex;
     gap: var(--spacing-sm);
     flex-wrap: wrap;
-    align-items: center;
-}
-
-/* Welcome Section */
-.welcome-section {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: linear-gradient(135deg, rgba(0, 77, 168, 0.1), rgba(27, 54, 95, 0.1));
-    border-radius: var(--radius-md);
-    border: 1px solid var(--glass-border);
-}
-
-.welcome-text {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.user-name {
-    color: var(--fbca-medium-blue);
-    font-weight: 600;
-    margin-left: 0.25rem;
 }
 
 /* ============================================
@@ -261,30 +238,6 @@ body {
 }
 
 .btn-success-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(17, 153, 142, 0.4);
-}
-
-.btn-warning-gradient {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #78350f;
-    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.3);
-    font-weight: 600;
-}
-
-.btn-warning-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(251, 191, 36, 0.4);
-    color: #78350f;
-}
-
-.btn-danger-gradient {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
-}
-
-.btn-danger-gradient:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 24px rgba(17, 153, 142, 0.4);
 }
@@ -574,14 +527,14 @@ body {
 .fc-toolbar-title {
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    color: rgba(255, 255, 255, 0.95) !important;
+    color: var(--text-primary);
 }
 
 .fc-button {
-    background: rgba(255, 255, 255, 0.15) !important;
+    background: var(--glass-bg) !important;
     backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
     padding: 0.5rem 1rem !important;
     border-radius: var(--radius-sm) !important;
     font-weight: 600 !important;
@@ -590,20 +543,20 @@ body {
 }
 
 .fc-button:hover {
-    background: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
     transform: translateY(-2px);
 }
 
 .fc-button-primary:not(:disabled):active,
 .fc-button-primary:not(:disabled).fc-button-active {
-    background: rgba(117, 211, 242, 0.3) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-    border-color: rgba(117, 211, 242, 0.5) !important;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end)) !important;
+    color: white !important;
+    border-color: transparent !important;
 }
 
 .fc-daygrid-day-number {
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.95) !important;
+    color: var(--text-primary);
 }
 
 .fc-col-header-cell {
@@ -612,74 +565,27 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--text-secondary);
 }
 
 .fc-event {
     cursor: pointer;
     border: none !important;
-    border-radius: 12px !important;
-    padding: 6px 12px !important;
-    font-size: 0.875rem !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
     font-weight: 600 !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden !important;
+    transition: var(--transition-fast) !important;
+    box-shadow: var(--shadow-sm);
 }
 
 .fc-event:hover {
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    z-index: 10;
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .fc-event-title {
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    display: block !important;
-    line-height: 1.4 !important;
-}
-
-.fc-event-title-container {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-/* Status indicator dot (left side of event) */
-.event-status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Week/Day View Improvements - Smaller text for tight spaces */
-.fc-timegrid-event .fc-event-main {
-    padding: 2px 4px !important;
-    min-height: 30px !important;
-}
-
-.fc-timegrid-event .fc-event-title {
-    font-size: 0.75rem !important;
-    line-height: 1.2 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
-    white-space: normal !important;
-}
-
-.fc-timegrid-event .fc-event-time {
-    font-size: 0.7rem !important;
-    line-height: 1.2 !important;
+    font-weight: 700 !important;
 }
 
 /* Event Colors by Status */
@@ -759,8 +665,7 @@ body {
     overflow: hidden;
 }
 
-.modal-header-modern,
-.modern-modal-header {
+.modal-header-modern {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -787,8 +692,6 @@ body {
 
 .modal-body-modern {
     padding: var(--spacing-xl);
-    background: rgba(10, 22, 40, 0.95) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .modal-body-scrollable {
@@ -818,7 +721,7 @@ body {
 .modal-footer-modern {
     padding: var(--spacing-lg) var(--spacing-xl);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(10, 22, 40, 0.95) !important;
+    background: rgba(255, 255, 255, 0.05);
     display: flex;
     gap: var(--spacing-sm);
     justify-content: flex-end;
@@ -871,49 +774,6 @@ body {
 
 .modern-input::placeholder {
     color: var(--text-muted);
-}
-
-/* Recurring modal uses different class names - apply same dark styling */
-.modern-modal-body {
-    background: rgba(10, 22, 40, 0.95) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-}
-
-.modern-modal-footer {
-    background: rgba(10, 22, 40, 0.95) !important;
-}
-
-/* Force readable text on all form inputs and labels */
-.modal-body-modern label,
-.modal-body-modern .form-label-modern,
-.modal-body-modern .form-label,
-.modal-body-modern .form-check-label,
-.modal-body-modern .step-header h6,
-.modal-body-modern p,
-.modal-body-modern .info-box,
-.modern-modal-body label,
-.modern-modal-body .form-label-modern,
-.modern-modal-body .form-label,
-.modern-modal-body .form-check-label,
-.modern-modal-body h6,
-.modern-modal-body p,
-.modern-modal-body .info-box {
-    color: rgba(255, 255, 255, 0.95) !important;
-}
-
-.modern-input,
-.form-control,
-.form-select {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-}
-
-.modern-input:focus,
-.form-control:focus,
-.form-select:focus {
-    background: rgba(255, 255, 255, 0.25) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .modern-input-sm {
@@ -1607,56 +1467,3 @@ body {
 /* ============================================
    END OF STYLES
    ============================================ */
-
-/* Recurring Schedule Styles */
-.days-selector {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-}
-
-.day-checkbox {
-    position: relative;
-    cursor: pointer;
-}
-
-.day-checkbox input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-}
-
-.day-checkbox span {
-    display: inline-block;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(27, 54, 95, 0.2);
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    min-width: 60px;
-    text-align: center;
-}
-
-.day-checkbox input[type="checkbox"]:checked + span {
-    background: linear-gradient(135deg, #1B365F 0%, #004da8 100%);
-    border-color: #1B365F;
-    color: white;
-}
-
-.day-checkbox:hover span {
-    border-color: #004da8;
-    background: rgba(0, 77, 168, 0.1);
-}
-
-.btn-success-gradient {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border: none;
-    color: white;
-}
-
-.btn-success-gradient:hover {
-    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
-}
