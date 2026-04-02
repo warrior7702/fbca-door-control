@@ -1,0 +1,46 @@
+/* MOBILE HEADER - FINAL FIX */
+@media (max-width: 900px) {
+    /* Hide desktop header */
+    .unified-header .header-desktop {
+        display: none !important;
+    }
+    
+    /* Show mobile header */
+    .unified-header .header-mobile {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    /* ALL direct children full width */
+    .header-mobile > * {
+        width: 100% !important;
+        flex: 0 0 auto !important;
+    }
+    
+    /* Dropdown wrapper */
+    .header-mobile .dropdown {
+        width: 100% !important;
+    }
+    
+    /* All buttons full width */
+    .header-mobile .btn,
+    .header-mobile .btn-create-dropdown,
+    .header-mobile .btn-page,
+    .header-mobile .btn-sync {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        min-height: 48px;
+    }
+    
+    /* Dropdown menu */
+    .header-mobile .dropdown-menu {
+        width: 100%;
+    }
+}
