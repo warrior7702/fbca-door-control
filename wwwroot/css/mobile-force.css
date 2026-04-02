@@ -1,0 +1,26 @@
+/* FORCE MOBILE HEADER - NUCLEAR OPTION */
+@media (max-width: 768px) {
+    /* Triple-nested specificity to override everything */
+    header.unified-header .header-main .header-actions.header-desktop {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    header.unified-header .header-main .header-actions.header-mobile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    header.unified-header .header-mobile .btn-create-dropdown {
+        display: flex !important;
+    }
+}
+
+/* Debug: Make mobile header visible with red background to confirm it works */
+@media (max-width: 768px) {
+    .header-mobile {
+        background: rgba(255, 0, 0, 0.3) !important;
+        padding: 0.5rem !important;
+    }
+}

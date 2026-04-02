@@ -1,0 +1,42 @@
+/* MOBILE: Simple Vertical Stack - No Wrapping Issues */
+
+@media (max-width: 768px) {
+    /* Hide desktop */
+    .unified-header .header-desktop {
+        display: none !important;
+    }
+    
+    /* Show mobile - VERTICAL STACK */
+    .unified-header .header-mobile {
+        display: flex !important;
+        flex-direction: column; /* Stack vertically - no wrapping issues */
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    /* FORCE hamburger dropdown to show */
+    .header-mobile .dropdown,
+    .header-mobile .btn-create-dropdown {
+        display: flex !important;
+    }
+    
+    /* All buttons full width */
+    .header-mobile > * {
+        width: 100%;
+        flex: 0 0 auto; /* Don't grow or shrink */
+    }
+    
+    .header-mobile .btn {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        justify-content: center;
+        min-height: 48px; /* Touch target */
+    }
+    
+    /* Dropdown menu positioning */
+    .header-mobile .dropdown-menu {
+        width: 100%;
+    }
+}

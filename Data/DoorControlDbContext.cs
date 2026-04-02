@@ -21,6 +21,7 @@ public class DoorControlDbContext : DbContext
     public DbSet<RecurrencePatternDoor> RecurrencePatternDoors { get; set; } = null!;
     public DbSet<RecurrenceInstance> RecurrenceInstances { get; set; } = null!;
     public DbSet<DoorCamera> DoorCameras { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

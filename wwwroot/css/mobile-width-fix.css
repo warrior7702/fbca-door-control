@@ -1,0 +1,43 @@
+/* MOBILE WIDTH FIX */
+@media (max-width: 768px) {
+    /* Force header to fit screen */
+    .unified-header .header-main {
+        padding: 0.5rem;
+        overflow-x: hidden;
+    }
+    
+    .unified-header .header-mobile {
+        width: 100%;
+        max-width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    /* Make buttons flexible width */
+    .header-mobile .dropdown,
+    .header-mobile .btn-page,
+    .header-mobile .btn-sync {
+        flex: 1 1 calc(50% - 0.25rem); /* 2 per row */
+        min-width: 0;
+        max-width: none;
+    }
+    
+    /* Ensure buttons don't overflow */
+    .header-mobile .btn {
+        width: 100%;
+        padding: 0.625rem 0.5rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Extra small phones - stack vertically */
+@media (max-width: 576px) {
+    .header-mobile .dropdown,
+    .header-mobile .btn-page,
+    .header-mobile .btn-sync {
+        flex: 1 1 100%; /* Full width, stack vertically */
+    }
+}

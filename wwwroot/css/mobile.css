@@ -5,13 +5,13 @@
    ============================================ */
 
 /* Hide mobile-specific elements on desktop */
-.header-mobile,
-.btn-create-dropdown {
-    display: none;
+.unified-header .header-mobile,
+.unified-header .btn-create-dropdown {
+    display: none !important;
 }
 
 /* Show desktop header by default */
-.header-desktop {
+.unified-header .header-desktop {
     display: flex;
     gap: 0.75rem;
     align-items: center;
@@ -20,12 +20,12 @@
 /* Mobile: Swap to mobile layout */
 @media (max-width: 768px) {
     /* Hide desktop header */
-    .header-desktop {
+    .unified-header .header-desktop {
         display: none !important;
     }
     
     /* Show mobile header */
-    .header-mobile {
+    .unified-header .header-mobile {
         display: flex !important;
         gap: 0.5rem;
         flex-wrap: wrap;

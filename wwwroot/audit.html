@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBCA Audit Log</title>
+    
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/calendar.css" rel="stylesheet">
+    <link href="/css/status.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: #0a1628 !important;
+            color: #fff;
+        }
+        
+        .audit-table {
+            width: 100%;
+            background: rgba(27, 54, 95, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .audit-table thead {
+            background: linear-gradient(135deg, #1B365F 0%, #004da8 100%);
+        }
+        
+        .audit-table th {
+            padding: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .audit-table td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .audit-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .status-success {
+            color: #10b981;
+        }
+        
+        .status-failed {
+            color: #ef4444;
+        }
+        
+        .filter-bar {
+            padding: 1rem;
+            background: rgba(27, 54, 95, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-bar select,
+        .filter-bar input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar select option {
+            background: rgba(27, 54, 95, 0.95);
+        }
+    </style>
+</head>
+<body>
+    <!-- Unified Header -->
+    <header class="unified-header">
+        <div class="header-main">
+            <div class="brand">
+                <img src="/images/fbca-logo.png" alt="FBCA" style="height: 48px; width: auto; filter: brightness(1.1);">
+                <div class="brand-text">
+                    <div class="brand-title">Door Control</div>
+                    <div class="brand-subtitle">Audit Log</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/calendar.html" class="btn btn-primary-gradient">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>Calendar</span>
+                </a>
+                <a href="/status.html" class="btn btn-primary-gradient">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="2" width="16" height="20" rx="1"/>
+                        <line x1="5" y1="7" x2="19" y2="7"/>
+                        <line x1="5" y1="13" x2="19" y2="13"/>
+                    </svg>
+                    <span>Status</span>
+                </a>
+                <a href="/cameras.html" class="btn btn-primary-gradient">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>Cameras</span>
+                </a>
+                <a href="/audit.html" class="btn btn-primary-gradient" style="background: rgba(0, 77, 168, 0.3); border: 1px solid rgba(117, 211, 242, 0.5); pointer-events: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <span>Audit</span>
+                </a>
+                <button class="btn btn-primary-gradient" onclick="loadAuditLogs()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid" style="padding: 1.5rem;">
+        <!-- Filters -->
+        <div class="filter-bar">
+            <select id="dateFilter" onchange="loadAuditLogs()">
+                <option value="24">Last 24 Hours</option>
+                <option value="168" selected>Last 7 Days</option>
+                <option value="720">Last 30 Days</option>
+            </select>
+            <select id="actionFilter" onchange="loadAuditLogs()">
+                <option value="">All Actions</option>
+                <option value="door_unlock">Door Unlock</option>
+                <option value="door_lock">Door Lock</option>
+                <option value="schedule_create">Schedule Created</option>
+                <option value="schedule_execute">Schedule Executed</option>
+            </select>
+            <select id="successFilter" onchange="loadAuditLogs()">
+                <option value="">All Results</option>
+                <option value="1">Success Only</option>
+                <option value="0">Failed Only</option>
+            </select>
+            <button class="btn btn-glass" onclick="exportCSV()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export CSV</span>
+            </button>
+        </div>
+
+        <!-- Audit Log Table -->
+        <div class="audit-table">
+            <table style="width: 100%; color: #fff;">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                        <th>Result</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
+                            <div class="spinner-border text-light mb-2"></div>
+                            <div>Loading audit logs...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadAuditLogs() {
+            const hours = document.getElementById('dateFilter').value;
+            const action = document.getElementById('actionFilter').value;
+            const success = document.getElementById('successFilter').value;
+            
+            try {
+                const params = new URLSearchParams({
+                    hours,
+                    ...(action && { actionType: action }),
+                    ...(success && { success })
+                });
+                
+                const response = await fetch(`/api/audit?${params}`);
+                const logs = await response.json();
+                
+                const tbody = document.getElementById('auditTableBody');
+                
+                if (logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">No audit logs found</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = logs.map(log => `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td>${log.userName || 'System'}</td>
+                        <td>${formatAction(log.actionType)}</td>
+                        <td>${log.doorName || log.eventName || '-'}</td>
+                        <td class="${log.success ? 'status-success' : 'status-failed'}">
+                            ${log.success ? '✓ Success' : '✗ Failed'}
+                        </td>
+                        <td style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                            ${log.errorMessage || '-'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load audit logs:', error);
+                document.getElementById('auditTableBody').innerHTML = 
+                    '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #ef4444;">Failed to load logs. Please try again.</td></tr>';
+            }
+        }
+        
+        function formatAction(action) {
+            const labels = {
+                'door_unlock': 'Door Unlock',
+                'door_lock': 'Door Lock',
+                'schedule_create': 'Schedule Created',
+                'schedule_execute': 'Schedule Executed',
+                'schedule_delete': 'Schedule Deleted',
+                'system_start': 'System Start'
+            };
+            return labels[action] || action;
+        }
+        
+        function exportCSV() {
+            alert('CSV export coming soon!');
+        }
+        
+        // Load on page load
+        loadAuditLogs();
+    </script>
+</body>
+</html>

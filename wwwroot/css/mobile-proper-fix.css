@@ -1,0 +1,51 @@
+/* PROPER MOBILE HEADER FIX - Based on Flexbox Best Practices */
+
+@media (max-width: 768px) {
+    /* Ensure box-sizing includes padding/border */
+    .unified-header *,
+    .unified-header *::before,
+    .unified-header *::after {
+        box-sizing: border-box;
+    }
+    
+    /* Container must explicitly wrap */
+    .unified-header .header-mobile {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.5rem;
+    }
+    
+    /* Use flex-basis instead of flex shorthand for clarity */
+    .header-mobile > * {
+        /* Each item gets less than 50% to account for gap */
+        flex: 0 1 calc(50% - 0.25rem);
+        min-width: 0; /* Allow shrinking below content size */
+    }
+    
+    /* Buttons need to respect container width */
+    .header-mobile .btn {
+        width: 100%;
+        padding: 0.75rem 0.5rem; /* Reduce horizontal padding */
+        font-size: 0.85rem;
+        justify-content: center;
+        white-space: nowrap;
+    }
+    
+    /* Hide desktop header */
+    .unified-header .header-desktop {
+        display: none !important;
+    }
+}
+
+/* Very small phones: stack everything */
+@media (max-width: 576px) {
+    .header-mobile > * {
+        flex: 0 1 100%; /* Full width */
+    }
+    
+    .header-mobile .btn {
+        padding: 0.875rem 1rem; /* More vertical padding when stacked */
+    }
+}

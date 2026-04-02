@@ -23,7 +23,7 @@
     <!-- Custom CSS -->
     <link href="/css/calendar.css" rel="stylesheet">
     <link href="/css/status.css" rel="stylesheet">
-    <link href="/css/mobile.css" rel="stylesheet">
+    <link href="/css/mobile-vertical-stack.css" rel="stylesheet">
     
     <!-- Dark theme override -->
     <style>
@@ -59,6 +59,16 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+        
+        /* MOBILE DEBUG - Force visibility */
+        @media (max-width: 768px) {
+            .header-desktop {
+                display: none !important;
+            }
+            .header-mobile {
+                display: flex !important;
+            }
         }
     </style>
 </head>
@@ -116,7 +126,6 @@
                     <span>Cameras</span>
                 </a>
             
-            <!-- Mobile Header (Calendar Page) -->
             <div class="header-actions header-mobile">
                 <!-- Hamburger Create Dropdown -->
                 <div class="dropdown">
@@ -186,7 +195,8 @@
         </div>
         </div>
         
-        <!-- Second Row: Filters -->
+            </div>
+        </div>
         <div class="header-filters" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
             <div style="position: relative; flex: 2; min-width: 250px;">
                 <input type="text" id="doorSearch" placeholder="Search doors..." 
