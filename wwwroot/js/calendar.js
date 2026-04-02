@@ -205,9 +205,8 @@ function initializeCalendar() {
             const activeStatus = isActive ? `\n🟢 ACTIVE NOW (${minutesRemaining}m remaining)` : '';
             const tooltip = `${arg.event.title}\nTime: ${timeRange}\nDoors: ${doorCount}\nStatus: ${status}${activeStatus}\n${doorNames}`;
 
-            // Build status badge
-            const statusText = status === 'Executing' ? 'Running' : status;
-            const statusBadge = `<span class="event-status-badge" style="color: ${dotColor}; margin-left: 6px; font-weight: 500;">(${statusText})</span>`;
+            // Build status badge (dot only, no text - text is in tooltip)
+            const statusBadge = ``;
             
             // Build active badge (only show if active)
             const activeBadge = isActive ? `<span class="active-badge" style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 4px; white-space: nowrap;">${minutesRemaining}m left</span>` : '';
