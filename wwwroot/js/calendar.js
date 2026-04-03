@@ -892,8 +892,11 @@ function showEventDetails(event) {
         props.schedules.forEach(schedule => {
             const door = allDoors.find(d => d.doorId === schedule.doorId);
             const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
-            // For future events, always show Pending regardless of schedule status
-            const scheduleStatus = isFutureEvent ? 'Pending' : (schedule.status || 'Pending');
+            // For future events, always show Pending; for past events show actual status
+            // Check if THIS SPECIFIC SCHEDULE has ended (not just event start time)
+            const scheduleEndTime = schedule.lockTime ? new Date(schedule.lockTime) : (event.end ? new Date(event.end) : new Date());
+            const scheduleHasEnded = scheduleEndTime < new Date();
+            const scheduleStatus = scheduleHasEnded ? (schedule.status || 'Pending') : 'Pending';
             // Only show ACTIVE badge for current/past events, not future instances
             const scheduleIsActive = !isFutureEvent && activeScheduleIds.has(schedule.scheduleId);
             const activeBadge = scheduleIsActive ? `<span class="badge" style="background: #10b981; color: white; margin-left: 8px;">ACTIVE (${activeScheduleData[schedule.scheduleId]?.minutesRemaining || 0}m left)</span>` : '';
