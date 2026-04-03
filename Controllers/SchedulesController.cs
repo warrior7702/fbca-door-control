@@ -243,9 +243,9 @@ public class SchedulesController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new unlock schedule.
+    /// Create a new unlock schedule (accepts door name or door ID).
     /// POST /api/schedules
-    /// Body: { "doorId": 5, "startTime": "2026-02-12T08:00:00Z", "endTime": "2026-02-12T17:00:00Z", ... }
+    /// Body: { "doorId": 5, "doorName": "Main Entrance", "startTime": "2026-02-12T08:00:00Z", "endTime": "2026-02-12T17:00:00Z", ... }
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<ScheduleCreateResponse>> CreateSchedule([FromBody] CreateScheduleRequest request)
@@ -258,29 +258,69 @@ public class SchedulesController : ControllerBase
                 return BadRequest(new { error = "End time must be after start time" });
             }
 
-            var door = await _dbContext.Doors.FindAsync(request.DoorId);
+            // Resolve door (by ID or by name)
+            Door? door = null;
+            
+            if (request.DoorId.HasValue)
+            {
+                door = await _dbContext.Doors.FindAsync(request.DoorId.Value);
+            }
+            else if (!string.IsNullOrEmpty(request.DoorName))
+            {
+                // Find door by name (case-insensitive, partial match)
+                // Load all doors into memory then search (EF can't translate StringComparison)
+                var allDoors = await _dbContext.Doors.ToListAsync();
+                door = allDoors.FirstOrDefault(d => 
+                    d.DoorName.Contains(request.DoorName, StringComparison.OrdinalIgnoreCase) ||
+                    request.DoorName.Contains(d.DoorName, StringComparison.OrdinalIgnoreCase));
+            }
+            
             if (door == null)
             {
-                return NotFound(new { error = "Door not found", doorId = request.DoorId });
+                return NotFound(new { 
+                    error = "Door not found", 
+                    doorId = request.DoorId, 
+                    doorName = request.DoorName 
+                });
             }
 
             if (!door.IsActive)
             {
-                return BadRequest(new { error = "Door is not active", doorId = request.DoorId });
+                return BadRequest(new { error = "Door is not active", doorId = door.DoorID, doorName = door.DoorName });
+            }
+
+            // Check for duplicate schedule
+            var existingSchedule = await _dbContext.UnlockSchedules
+                .FirstOrDefaultAsync(s => 
+                    s.DoorID == door.DoorID &&
+                    s.StartTime == request.StartTime &&
+                    s.EndTime == request.EndTime &&
+                    s.ScheduleName == request.ScheduleName);
+
+            if (existingSchedule != null)
+            {
+                return Conflict(new { 
+                    error = "Schedule already exists", 
+                    scheduleId = existingSchedule.ScheduleID,
+                    message = $"A schedule for {door.DoorName} at this time already exists"
+                });
             }
 
             // Create schedule
             var schedule = new UnlockSchedule
             {
-                DoorID = request.DoorId,
+                DoorID = door.DoorID,
                 ScheduleName = request.ScheduleName,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
                 RecurrencePattern = request.RecurrencePattern ?? "NONE",
                 RecurrenceEndDate = request.RecurrenceEndDate,
                 Source = request.Source ?? "Manual",
+                Priority = request.Priority ?? 5,
+                EventType = request.EventType ?? "Special",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = request.Notes
             };
 
             _dbContext.UnlockSchedules.Add(schedule);

@@ -26,13 +26,17 @@ public class ScheduleListResponse
 
 public class CreateScheduleRequest
 {
-    public int DoorId { get; set; }
+    public int? DoorId { get; set; }
+    public string? DoorName { get; set; }  // Alternative to DoorId (partial match supported)
     public string? ScheduleName { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public string? RecurrencePattern { get; set; }
     public DateTime? RecurrenceEndDate { get; set; }
     public string? Source { get; set; }
+    public int? Priority { get; set; }  // Optional priority (default: 5)
+    public string? EventType { get; set; }  // Optional: Special/Weekly (default: Special)
+    public string? Notes { get; set; }  // Optional notes
 }
 
 public class ScheduleCreateResponse

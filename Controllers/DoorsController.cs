@@ -200,6 +200,24 @@ public class DoorsController : ControllerBase
             };
 
             _dbContext.ScheduleActionLogs.Add(actionLog);
+
+            // Log to audit log
+            var auditLog = new AuditLog
+            {
+                Timestamp = DateTime.Now,
+                ActionType = action == "unlock" ? "door_unlock" : "door_lock",
+                UserEmail = User?.Identity?.Name ?? "anonymous",
+                UserName = User?.Identity?.Name ?? "Manual User",
+                DoorID = door.DoorID,
+                DoorName = door.DoorName,
+                Success = response.Success,
+                ErrorMessage = response.ErrorMessage,
+                IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                UserAgent = Request.Headers["User-Agent"].ToString()
+            };
+
+            _dbContext.AuditLogs.Add(auditLog);
+            
             await _dbContext.SaveChangesAsync();
 
             return Ok(new QuickControlsTestResult

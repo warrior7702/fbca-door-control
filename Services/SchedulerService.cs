@@ -61,6 +61,9 @@ public class SchedulerService : BackgroundService
         var now = DateTime.UtcNow;
         var gracePeriod = TimeSpan.FromMinutes(_gracePeriodMinutes);
         var reUnlockInterval = TimeSpan.FromMinutes(_reUnlockIntervalMinutes);
+        
+        // Track which events we've logged to audit in this cycle (to avoid duplicate entries)
+        var loggedEvents = new HashSet<string>();
 
         _logger.LogDebug("Checking schedules at {Time}", now);
 
@@ -110,7 +113,7 @@ public class SchedulerService : BackgroundService
             }
 
             await ExecuteScheduleActionAsync(
-                dbContext, quickControls, schedule, "UNLOCK");
+                dbContext, quickControls, schedule, "UNLOCK", loggedEvents, isReUnlock);
         }
 
         // Find schedules needing LOCK (end time passed, not yet locked)
@@ -156,7 +159,7 @@ public class SchedulerService : BackgroundService
                 schedule.ScheduleID, schedule.Door.DoorName, schedule.Door.VIADeviceID, schedule.Priority);
 
             await ExecuteScheduleActionAsync(
-                dbContext, quickControls, schedule, "LOCK");
+                dbContext, quickControls, schedule, "LOCK", loggedEvents, isReUnlock: false);
 
             // Deactivate schedule after lock (completed)
             schedule.IsActive = false;
@@ -172,7 +175,9 @@ public class SchedulerService : BackgroundService
         DoorControlDbContext dbContext,
         IQuickControlsService quickControls,
         UnlockSchedule schedule,
-        string actionType)
+        string actionType,
+        HashSet<string> loggedEvents,
+        bool isReUnlock = false)
     {
         var actionLog = new ScheduleActionLog
         {
@@ -230,6 +235,33 @@ public class SchedulerService : BackgroundService
         {
             // Always log the action (audit trail)
             dbContext.ScheduleActionLogs.Add(actionLog);
+            
+            // Log to audit ONCE per event (not once per door)
+            // Only log first UNLOCK and final LOCK (skip re-unlock heartbeats)
+            var eventKey = $"{schedule.ScheduleName}_{actionType}";
+            var shouldLogToAudit = !isReUnlock && !loggedEvents.Contains(eventKey);
+            
+            if (shouldLogToAudit)
+            {
+                var auditLog = new AuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    ActionType = actionType == "LOCK" ? "schedule_lock" : "schedule_unlock",
+                    UserEmail = "system@fbca.org",
+                    UserName = "Scheduler",
+                    DoorID = schedule.DoorID, // Just use first door ID for reference
+                    DoorName = schedule.Door?.DoorName,
+                    ScheduleID = schedule.ScheduleID,
+                    EventName = schedule.ScheduleName,
+                    Success = actionLog.Success,
+                    ErrorMessage = actionLog.ErrorMessage,
+                    Metadata = $"{schedule.ScheduleName}"
+                };
+                
+                dbContext.AuditLogs.Add(auditLog);
+                loggedEvents.Add(eventKey);
+            }
+            
             await dbContext.SaveChangesAsync();
         }
     }

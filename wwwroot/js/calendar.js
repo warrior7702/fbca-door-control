@@ -175,7 +175,9 @@ function initializeCalendar() {
             const schedules = props.schedules || [];
             
             // Check if any schedule in this event is currently active
-            const activeSchedule = schedules.find(s => activeScheduleIds.has(s.scheduleId));
+            // Only show active for current/past events, not future recurring instances
+            const isFutureEvent = arg.event.start > new Date();
+            const activeSchedule = !isFutureEvent ? schedules.find(s => activeScheduleIds.has(s.scheduleId)) : null;
             const isActive = !!activeSchedule;
             const minutesRemaining = isActive && activeSchedule ? (activeScheduleData[activeSchedule.scheduleId]?.minutesRemaining || 0) : 0;
             
@@ -232,6 +234,12 @@ function initializeCalendar() {
             } else {
                 info.el.classList.add('event-special');
             }
+        },
+        
+        // Re-render events when calendar view changes (month/week navigation)
+        datesSet: function(dateInfo) {
+            // When user navigates to a different month, regenerate recurring instances
+            renderCalendarEvents();
         }
     });
     
@@ -368,12 +376,79 @@ async function pollActiveSchedules() {
     }
 }
 
+// Generate recurring event instances for calendar display
+function expandRecurringEvents(group, startWindow, endWindow) {
+    const instances = [];
+    const isRecurring = group.schedules.some(s => s.isRecurring === true);
+    
+    if (!isRecurring) {
+        // Non-recurring event - return as-is
+        return [group];
+    }
+    
+    // For weekly recurring events, generate instances for the visible calendar range
+    const firstEventDate = new Date(group.unlockTime);
+    const windowStart = new Date(startWindow);
+    const windowEnd = new Date(endWindow);
+    
+    // Calculate day of week for the event
+    const dayOfWeek = firstEventDate.getDay(); // 0 = Sunday, 6 = Saturday
+    
+    // Find first occurrence in or after the window
+    let currentDate = new Date(firstEventDate);
+    
+    // If first event is before window, advance to first Sunday in window
+    if (currentDate < windowStart) {
+        currentDate = new Date(windowStart);
+        // Advance to correct day of week
+        const daysToAdd = (dayOfWeek - currentDate.getDay() + 7) % 7;
+        currentDate.setDate(currentDate.getDate() + daysToAdd);
+    }
+    
+    // Generate instances up to 6 months ahead or window end (whichever is sooner)
+    const maxDate = new Date(Math.min(
+        windowEnd.getTime(),
+        Date.now() + (180 * 24 * 60 * 60 * 1000) // 6 months
+    ));
+    
+    while (currentDate <= maxDate) {
+        // Create instance with same time as original but on this date
+        const instanceStart = new Date(currentDate);
+        instanceStart.setHours(firstEventDate.getHours(), firstEventDate.getMinutes(), 0, 0);
+        
+        const instanceEnd = new Date(instanceStart);
+        const duration = new Date(group.lockTime) - new Date(group.unlockTime);
+        instanceEnd.setTime(instanceStart.getTime() + duration);
+        
+        instances.push({
+            eventName: group.eventName,
+            unlockTime: instanceStart.toISOString(),
+            lockTime: instanceEnd.toISOString(),
+            schedules: group.schedules,
+            status: 'Pending', // Future instances are always pending
+            notes: group.notes,
+            createdAt: group.createdAt,
+            isRecurringInstance: true
+        });
+        
+        // Move to next week
+        currentDate.setDate(currentDate.getDate() + 7);
+    }
+    
+    return instances.length > 0 ? instances : [group];
+}
+
 // Render schedules as calendar events (event-centered, not door-centered)
 function renderCalendarEvents() {
     if (!calendar) return;
     
     // Clear existing events
     calendar.removeAllEvents();
+    
+    // Get current calendar view range (expand recurring events for visible range only)
+    const view = calendar.view;
+    const windowStart = view.currentStart;
+    const windowEnd = view.currentEnd;
     
     // Group schedules by event name + time (one calendar event per actual event)
     const eventGroups = {};
@@ -403,8 +478,15 @@ function renderCalendarEvents() {
             eventGroups[eventKey].status = 'Pending';
     });
     
-    // Convert event groups to FullCalendar events
-    const events = Object.values(eventGroups)
+    // Expand recurring events into multiple instances
+    const expandedGroups = [];
+    Object.values(eventGroups).forEach(group => {
+        const instances = expandRecurringEvents(group, windowStart, windowEnd);
+        expandedGroups.push(...instances);
+    });
+    
+    // Convert event groups (including recurring instances) to FullCalendar events
+    const events = expandedGroups
         .filter(group => {
             // Apply three-way filter based on EventType field
             const eventType = group.schedules[0]?.eventType || 'Special';
@@ -460,10 +542,16 @@ function renderCalendarEvents() {
         let endTime = group.lockTime;
         
         // Determine event color based on status
-        let color = '#0d6efd'; // pending = blue
-        if (group.status === 'Executed') color = '#198754'; // green
-        if (group.status === 'Failed') color = '#dc3545'; // red
-        if (group.status === 'Cancelled') color = '#6c757d'; // gray
+        // For recurring instances in the future, always show as Pending (blue)
+        const isFutureInstance = group.isRecurringInstance && new Date(startTime) > new Date();
+        let color = '#0d6efd'; // pending = blue (default)
+        
+        if (!isFutureInstance) {
+            // Only apply actual status colors for past/current events
+            if (group.status === 'Executed') color = '#198754'; // green
+            if (group.status === 'Failed') color = '#dc3545'; // red
+            if (group.status === 'Cancelled') color = '#6c757d'; // gray
+        }
         
         return {
             id: `event_${group.eventName}_${group.unlockTime}`,
@@ -607,9 +695,37 @@ function showDaySummary(selectedDate) {
     const dayEnd = new Date(date);
     dayEnd.setHours(23, 59, 59, 999);
     
-    const daySchedules = allSchedules.filter(schedule => {
+    // For recurring events, we need to check if this day matches their day-of-week
+    const targetDayOfWeek = dayStart.getDay(); // 0 = Sunday, 6 = Saturday
+    
+    const daySchedules = [];
+    allSchedules.forEach(schedule => {
         const unlockTime = new Date(schedule.unlockTime);
-        return unlockTime >= dayStart && unlockTime <= dayEnd;
+        const isRecurring = schedule.isRecurring === true;
+        
+        if (isRecurring) {
+            // Check if the recurring event happens on this day of the week
+            const scheduleDayOfWeek = unlockTime.getDay();
+            if (scheduleDayOfWeek === targetDayOfWeek && dayStart >= new Date(unlockTime.toDateString())) {
+                // Clone the schedule but with the target date
+                const instanceSchedule = { ...schedule };
+                const instanceStart = new Date(dayStart);
+                instanceStart.setHours(unlockTime.getHours(), unlockTime.getMinutes(), 0, 0);
+                const lockTime = new Date(schedule.lockTime);
+                const instanceEnd = new Date(instanceStart);
+                const duration = lockTime - unlockTime;
+                instanceEnd.setTime(instanceStart.getTime() + duration);
+                
+                instanceSchedule.unlockTime = instanceStart.toISOString();
+                instanceSchedule.lockTime = instanceEnd.toISOString();
+                daySchedules.push(instanceSchedule);
+            }
+        } else {
+            // Non-recurring: check exact date match
+            if (unlockTime >= dayStart && unlockTime <= dayEnd) {
+                daySchedules.push(schedule);
+            }
+        }
     });
     
     // Build schedule list
@@ -762,8 +878,10 @@ function showEventDetails(event) {
     const endTime = event.end ? new Date(event.end) : null;
     
     // Check if any schedule in this event is currently active
+    // Only show active for current/past events, not future recurring instances
     const schedules = props.schedules || [];
-    const activeSchedule = schedules.find(s => activeScheduleIds.has(s.scheduleId));
+    const isFutureEvent = event.start > new Date();
+    const activeSchedule = !isFutureEvent ? schedules.find(s => activeScheduleIds.has(s.scheduleId)) : null;
     const isActive = !!activeSchedule;
     const minutesRemaining = isActive && activeSchedule ? (activeScheduleData[activeSchedule.scheduleId]?.minutesRemaining || 0) : 0;
     
@@ -774,8 +892,10 @@ function showEventDetails(event) {
         props.schedules.forEach(schedule => {
             const door = allDoors.find(d => d.doorId === schedule.doorId);
             const doorName = door ? door.doorName : `Door ${schedule.doorId}`;
-            const scheduleStatus = schedule.status || 'Pending';
-            const scheduleIsActive = activeScheduleIds.has(schedule.scheduleId);
+            // For future events, always show Pending regardless of schedule status
+            const scheduleStatus = isFutureEvent ? 'Pending' : (schedule.status || 'Pending');
+            // Only show ACTIVE badge for current/past events, not future instances
+            const scheduleIsActive = !isFutureEvent && activeScheduleIds.has(schedule.scheduleId);
             const activeBadge = scheduleIsActive ? `<span class="badge" style="background: #10b981; color: white; margin-left: 8px;">ACTIVE (${activeScheduleData[schedule.scheduleId]?.minutesRemaining || 0}m left)</span>` : '';
             doorListHTML += `
                 <div class="event-door-item">
@@ -820,7 +940,7 @@ function showEventDetails(event) {
         ${doorListHTML}
         <div class="event-detail-row">
             <span class="event-detail-label">Status:</span>
-            <span class="badge status-badge-${(props.status || 'pending').toLowerCase()}">${props.status || 'Pending'}</span>
+            <span class="badge status-badge-${(event.start > new Date() ? 'pending' : (props.status || 'pending').toLowerCase())}">${event.start > new Date() ? 'Pending' : (props.status || 'Pending')}</span>
         </div>
         ${props.notes ? `
         <div class="event-detail-row">
@@ -872,7 +992,19 @@ async function deleteSchedule() {
         // Check if any failed
         const failed = responses.filter(r => !r.ok);
         if (failed.length > 0) {
-            throw new Error(`Failed to delete ${failed.length} schedule(s)`);
+            // Get error details from failed responses
+            const errorDetails = await Promise.all(
+                failed.map(async r => {
+                    try {
+                        const text = await r.text();
+                        return `${r.status}: ${text}`;
+                    } catch {
+                        return `${r.status}: ${r.statusText}`;
+                    }
+                })
+            );
+            console.error('Delete failures:', errorDetails);
+            throw new Error(`Failed to delete ${failed.length} schedule(s): ${errorDetails.join(', ')}`);
         }
         
         // Close modal
@@ -1480,4 +1612,29 @@ function getBuildingKey(buildingName) {
         'PCB': 'pcb'
     };
     return map[buildingName] || 'wade';
+}
+
+// Edit schedule - opens appropriate modal based on event type
+function editSchedule() {
+    if (!currentSelectedEvent) return;
+    
+    const props = currentSelectedEvent.extendedProps;
+    const schedules = props.schedules || [];
+    const isRecurring = schedules.some(s => s.isRecurring === true);
+    const isMultiDoor = schedules.length > 1;
+    
+    // Close the details modal
+    bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal')).hide();
+    
+    // Pre-fill the appropriate modal with current data
+    if (isRecurring) {
+        // Recurring schedule - open recurring modal with prefill
+        showRecurringModal(currentSelectedEvent);
+    } else if (isMultiDoor) {
+        // Multi-door event - open multi-door modal with prefill
+        showMultiDoorModal(currentSelectedEvent);
+    } else {
+        // Single door schedule - open create modal with prefill
+        showCreateModal(null, currentSelectedEvent);
+    }
 }
